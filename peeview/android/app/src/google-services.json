@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "173594402514",
+    "project_id": "gen-lang-client-0722950290",
+    "storage_bucket": "gen-lang-client-0722950290.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:173594402514:android:6d7df748e363b85bd8570b",
+        "android_client_info": {
+          "package_name": "com.example.peeview"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYjpW4PbtuVPvbOEUfcDFn5ZOQT-UvOB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
