@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import '../../widgets/role_selector.dart';
+import '../../../widgets/role_selector.dart';
 import 'registration_submitted_screen.dart';
 
 

@@ -4,8 +4,8 @@ import 'package:flutter/gestures.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'contact_location_screen.dart';
-import '../../widgets/text_field_input.dart';
-import '../../widgets/role_selector.dart';
+import '../../../widgets/text_field_input.dart';
+import '../../../widgets/role_selector.dart';
 
 
 class ClinicInfoScreen extends StatefulWidget {

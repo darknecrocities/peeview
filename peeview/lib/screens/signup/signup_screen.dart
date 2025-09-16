@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/gestures.dart';
-import 'gender_screen.dart'; // adjust path
-
-
+import '../../widgets/role_selector.dart';
+import '../../widgets/text_field_input.dart';
+import '../../widgets/phone_field.dart';
+import 'patient/gender_screen.dart';
+import 'clinic/clinic_info_screen.dart'; // <-- import ClinicInfoScreen
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -20,8 +21,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-  TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -31,20 +31,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _isLoading = false;
 
   @override
-  void initState() {
-    super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-  }
-
-  @override
   void dispose() {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
   Future<void> _signUp() async {
-    if (_passwordController.text.trim() !=
-        _confirmPasswordController.text.trim()) {
+    if (_nameController.text.trim().isEmpty ||
+        _emailController.text.trim().isEmpty ||
+        _phoneController.text.trim().isEmpty ||
+        _passwordController.text.trim().isEmpty ||
+        _confirmPasswordController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all the fields ❌")),
+      );
+      return;
+    }
+
+    if (_passwordController.text.trim() != _confirmPasswordController.text.trim()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Passwords do not match ❌")),
       );
@@ -54,11 +62,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // If role is Clinic, navigate to ClinicInfoScreen instead
+      if (_selectedRole == "Clinic") {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ClinicInfoScreen()),
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // Patient sign up
       UserCredential userCredential =
       await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
+// ✅ Update Firebase displayName
+      await userCredential.user?.updateDisplayName(_nameController.text.trim());
+      await userCredential.user?.reload();
 
       await _firestore.collection("users").doc(userCredential.user!.uid).set({
         "name": _nameController.text.trim(),
@@ -68,11 +91,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
         "createdAt": FieldValue.serverTimestamp(),
       });
 
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Account created successfully ✅")),
       );
 
-      Navigator.pop(context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const GenderScreen()),
+      );
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: ${e.message}")),
@@ -82,117 +109,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  Widget _buildRoleOption(String role, String assetPath) {
-    bool isSelected = _selectedRole == role;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedRole = role),
-      child: Container(
-        width: 130,
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? const Color(0xFF00247D) : Colors.grey.shade300,
-            width: isSelected ? 3 : 1,
-          ),
-        ),
-        child: Column(
-          children: [
-            Image.asset(assetPath, height: 70),
-            const SizedBox(height: 6),
-            Text(
-              role.toUpperCase(),
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: isSelected ? const Color(0xFF00247D) : Colors.black,
-              ),
-            ),
-          ],
-        ),
-      ),
+  void _signUpWithGoogle() {
+    print("Sign Up with Google clicked");
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const GenderScreen()),
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hint,
-    IconData? icon,
-    bool obscure = false,
-    TextInputType? type,
-  }) {
-    return TextField(
-      controller: controller,
-      obscureText: obscure,
-      keyboardType: type,
-      style: const TextStyle(fontSize: 14),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
-        prefixIcon: icon != null ? Icon(icon, color: Colors.grey, size: 20) : null,
-        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
-        filled: true,
-        fillColor: Colors.white,
-      ),
+  void _signUpWithFacebook() {
+    print("Sign Up with Facebook clicked");
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const GenderScreen()),
     );
   }
-
-  Widget _buildPhoneField() {
-    return Container(
-      height: 50, // fixed height for uniformity
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade400),
-        borderRadius: BorderRadius.circular(24),
-        color: Colors.white,
-      ),
-      child: Row(
-        children: [
-          // Country code picker
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              border: Border(
-                right: BorderSide(color: Colors.grey.shade400, width: 1),
-              ),
-            ),
-            child: CountryCodePicker(
-              onChanged: (code) {
-                setState(() => _countryCode = code.dialCode!);
-              },
-              initialSelection: "PH",
-              favorite: const ["+63", "PH"],
-              showFlag: true,
-              showDropDownButton: true,
-              showFlagDialog: true,
-              textStyle: const TextStyle(fontSize: 14, color: Colors.black),
-              padding: EdgeInsets.zero,
-            ),
-          ),
-
-          // Phone number field
-          Expanded(
-            child: TextField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              style: const TextStyle(fontSize: 14),
-              decoration: const InputDecoration(
-                hintText: "Phone Number",
-                hintStyle: TextStyle(fontSize: 14, color: Colors.grey),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -217,86 +148,54 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Role
                   const Align(
                     alignment: Alignment.centerLeft,
-                    child: Text(
-                      "I am:",
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
+                    child: Text("I am:", style: TextStyle(fontSize: 14, color: Colors.grey)),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildRoleOption("Patient", "lib/assets/images/patient.png"),
-                      _buildRoleOption("Clinic", "lib/assets/images/clinic.png"),
+                      RoleSelector(
+                        role: "Patient",
+                        assetPath: "lib/assets/images/patient.png",
+                        selectedRole: _selectedRole,
+                        onSelect: (val) => setState(() => _selectedRole = val),
+                      ),
+                      RoleSelector(
+                        role: "Clinic",
+                        assetPath: "lib/assets/images/clinic.png",
+                        selectedRole: _selectedRole,
+                        onSelect: (val) => setState(() => _selectedRole = val),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 14),
 
-                  // Fields
-                  _buildTextField(
-                      controller: _nameController,
-                      hint: "Full Name",
-                      icon: Icons.person),
+                  TextFieldInput(controller: _nameController, hint: "Full Name", icon: Icons.person),
                   const SizedBox(height: 10),
-                  _buildTextField(
-                      controller: _emailController,
-                      hint: "Email Address",
-                      icon: Icons.email),
+                  TextFieldInput(controller: _emailController, hint: "Email Address", icon: Icons.email),
                   const SizedBox(height: 10),
-
-                  _buildPhoneField(),
+                  PhoneField(controller: _phoneController, countryCode: _countryCode, onCountryCodeChanged: (val) => _countryCode = val),
                   const SizedBox(height: 10),
-
-                  _buildTextField(
-                      controller: _passwordController,
-                      hint: "Password",
-                      icon: Icons.lock,
-                      obscure: true),
+                  TextFieldInput(controller: _passwordController, hint: "Password", icon: Icons.lock, obscure: true),
                   const SizedBox(height: 10),
-                  _buildTextField(
-                      controller: _confirmPasswordController,
-                      hint: "Confirm Password",
-                      icon: Icons.lock,
-                      obscure: true),
-
+                  TextFieldInput(controller: _confirmPasswordController, hint: "Confirm Password", icon: Icons.lock, obscure: true),
                   const SizedBox(height: 16),
 
-                  // Button
-                  // Continue Button
                   ElevatedButton(
-                    onPressed: _isLoading ? null : () {
-                      _signUp();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => GenderScreen()),
-                      );
-                    },
+                    onPressed: _isLoading ? null : _signUp,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00247D),
                       minimumSize: const Size(double.infinity, 46),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                      "Continue",
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
+                        : const Text("Continue", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
 
-// Space below Continue button
                   const SizedBox(height: 16),
-
-// Or Divider
                   Row(
                     children: const [
                       Expanded(child: Divider(thickness: 1)),
@@ -307,36 +206,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       Expanded(child: Divider(thickness: 1)),
                     ],
                   ),
-
-// Space below divider
                   const SizedBox(height: 16),
 
-// Google Sign Up Button
                   OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => GenderScreen()),
-                      );
-                    },
+                    onPressed: _signUpWithGoogle,
                     icon: Image.asset("lib/assets/images/google_logo.png", height: 18),
                     label: const Text("Sign Up with Google"),
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 46),
                     ),
                   ),
-
-// Space between Google and Facebook buttons
                   const SizedBox(height: 12),
 
-// Facebook Sign Up Button
                   OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => GenderScreen()),
-                      );
-                    },
+                    onPressed: _signUpWithFacebook,
                     icon: Image.asset("lib/assets/images/facebookk.png", height: 18),
                     label: const Text("Sign Up with Facebook"),
                     style: OutlinedButton.styleFrom(
@@ -344,63 +227,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
 
-
                   const SizedBox(height: 20),
 
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "By continuing, you agree to our",
-                        style: TextStyle(fontSize: 14, color: Colors.black),
-                      ),
-                      const SizedBox(height: 4),
-                      RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                          text: "",
-                          style: const TextStyle(fontSize: 14, color: Colors.black),
-                          children: [
-                            TextSpan(
-                              text: "Terms of Service",
-                              style: const TextStyle(
-                                color: Colors.blue,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  // TODO: Open Terms of Service link
-                                  print("Terms of Service clicked");
-                                },
-                            ),
-                            const TextSpan(
-                              text: " and ",
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            TextSpan(
-                              text: "Privacy Policy",
-                              style: const TextStyle(
-                                color: Colors.blue,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  // TODO: Open Privacy Policy link
-                                  print("Privacy Policy clicked");
-                                },
-                            ),
-                          ],
+                  RichText(
+                    text: TextSpan(
+                      text: "Already have an account? ",
+                      style: const TextStyle(color: Colors.black, fontSize: 14),
+                      children: [
+                        TextSpan(
+                          text: "Sign In",
+                          style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Navigator.pop(context);
+                            },
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
 
-            // 🔹 Back button (top-left)
             Positioned(
               top: 12,
               left: 12,
@@ -408,12 +257,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 onTap: () => Navigator.pop(context),
                 child: Container(
                   padding: const EdgeInsets.all(6),
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.grey,
-                  ),
-                  child: const Icon(Icons.arrow_back,
-                      color: Colors.white, size: 22),
+                  decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                  child: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
                 ),
               ),
             ),

@@ -1,7 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../dashboard_screen.dart'; // import your DashboardScreen here
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
+
+  Future<void> _goToDashboard(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Example: assume signup already saved the displayName
+    final displayName = prefs.getString('displayName') ?? "User";
+
+    // ✅ Save logged-in state
+    await prefs.setBool('isLoggedIn', true);
+
+    // ✅ Navigate to DashboardScreen directly
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DashboardScreen(), // <-- directly call your screen
+        settings: RouteSettings(
+          arguments: {'displayName': displayName}, // pass data if needed
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +40,7 @@ class WelcomeScreen extends StatelessWidget {
               // Welcome Image
               Center(
                 child: Image.asset(
-                  'lib/assets/images/welcome.png', // Make sure this image exists in assets
+                  'lib/assets/images/welcome.png',
                   width: 300,
                   height: 300,
                   fit: BoxFit.contain,
@@ -43,10 +66,7 @@ class WelcomeScreen extends StatelessWidget {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Navigate to Dashboard screen
-                    Navigator.pushReplacementNamed(context, '/dashboard');
-                  },
+                  onPressed: () => _goToDashboard(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     shape: RoundedRectangleBorder(
@@ -71,7 +91,6 @@ class WelcomeScreen extends StatelessWidget {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Navigate to Setup Profile screen
                     Navigator.pushReplacementNamed(context, '/setup_profile');
                   },
                   style: ElevatedButton.styleFrom(
@@ -109,8 +128,6 @@ class WelcomeScreen extends StatelessWidget {
                         fontSize: 14,
                         decoration: TextDecoration.underline,
                       ),
-                      // Optional: Make email clickable
-                      recognizer: null,
                     ),
                   ],
                 ),

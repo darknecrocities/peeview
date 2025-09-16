@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // 👈 for hiding system UI
-import 'login/login_screen.dart';
+import '../login/login_screen.dart';
 
 class GuideStart extends StatefulWidget {
   const GuideStart({super.key});

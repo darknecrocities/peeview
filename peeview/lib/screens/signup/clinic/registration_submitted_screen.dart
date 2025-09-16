@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../login/login_screen.dart'; // adjust path as needed
+import '../../login/login_screen.dart'; // adjust path as needed
 
 
 class RegistrationSubmittedScreen extends StatelessWidget {

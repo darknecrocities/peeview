@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // ✅ Needed for SystemChrome
 import 'package:firebase_auth/firebase_auth.dart';
-import 'signup_screen.dart';
+import '../signup/signup_screen.dart';
+import '../dashboard_screen.dart'; // ✅ Import your dashboard
+import '../forgotPassword/forgotPassword.dart';
 
 class LoginInput extends StatefulWidget {
   const LoginInput({super.key});
@@ -38,9 +40,14 @@ class _LoginInputState extends State<LoginInput> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Login successful ✅")),
-      );
+
+      // ✅ If login successful → go to DashboardScreen
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: ${e.message}")),
@@ -97,11 +104,9 @@ class _LoginInputState extends State<LoginInput> {
                   prefixIcon: const Icon(Icons.email, color: Colors.grey),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(32),
-                    borderSide: const BorderSide(color: Colors.grey),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(32),
-                    borderSide: const BorderSide(color: Colors.grey),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(32),
@@ -126,11 +131,9 @@ class _LoginInputState extends State<LoginInput> {
                   prefixIcon: const Icon(Icons.lock, color: Colors.grey),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(32),
-                    borderSide: const BorderSide(color: Colors.grey),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(32),
-                    borderSide: const BorderSide(color: Colors.grey),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(32),
@@ -147,13 +150,17 @@ class _LoginInputState extends State<LoginInput> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
-                    // TODO: Password reset
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                    );
                   },
                   child: const Text(
                     "Forgot password?",
                     style: TextStyle(color: Colors.blue),
                   ),
                 ),
+
               ),
 
               const SizedBox(height: 12),
