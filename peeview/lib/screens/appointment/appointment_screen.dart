@@ -94,7 +94,7 @@ class _AppointmentScreenState extends State<AppointmentScreen>
                             child: Text(status,
                                 style: TextStyle(
                                     color: statusColor,
-                                    fontSize: 11,
+                                    fontSize: 9,
                                     fontWeight: FontWeight.w500)),
                           ),
                         ],
@@ -153,7 +153,7 @@ class _AppointmentScreenState extends State<AppointmentScreen>
             tabs: const [
               Tab(text: "Upcoming"),
               Tab(text: "Completed"),
-              Tab(text: "Cancelled"),
+              Tab(text: "Cancelled",),
             ],
           ),
 
@@ -249,7 +249,7 @@ class _AppointmentScreenState extends State<AppointmentScreen>
 
                 // CANCELLED
                 ListView(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(12),
                   children: [
                     _buildDoctorCard(
                       doctorName: "Dr. Antonio Dela Cruz, MD",
