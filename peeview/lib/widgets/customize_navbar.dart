@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import '../screens/dashboard_screen.dart'; // ✅ Import DashboardScreen
+import '../screens/dashboard_screen.dart';
+import '../screens/profile_screen.dart';
+import '../screens/appointment/appointment_screen.dart';
+import '../screens/chat/message_screen.dart';
 
 class CustomizeNavBar extends StatelessWidget {
   final int currentIndex;
@@ -25,15 +28,39 @@ class CustomizeNavBar extends StatelessWidget {
           currentIndex: currentIndex,
           onTap: (index) {
             if (index == 0) {
-              // ✅ Navigate to Dashboard when Home tapped
+              // ✅ Navigate to Dashboard
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const DashboardScreen(),
                 ),
               );
+            } else if (index == 3) {
+              // ✅ Navigate to AppointmentScreen
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MessageScreen(),
+                ),
+              );
+            } else if (index == 1) {
+              // ✅ Navigate to AppointmentScreen
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AppointmentScreen(),
+                ),
+              );
+            } else if (index == 4) {
+              // ✅ Navigate to ProfileScreen
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfileScreen(),
+                ),
+              );
             } else {
-              onTap(index); // keep the same behavior for others
+              onTap(index); // Keep same behavior for other tabs
             }
           },
           showSelectedLabels: false,
@@ -48,11 +75,15 @@ class CustomizeNavBar extends StatelessWidget {
               label: "",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.history, size: 28),
+              icon: SizedBox.shrink(), // Empty slot under PeeView logo
               label: "",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.settings, size: 28),
+              icon: Icon(Icons.chat, size: 28),
+              label: "",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person, size: 28),
               label: "",
             ),
           ],
@@ -63,8 +94,8 @@ class CustomizeNavBar extends StatelessWidget {
           top: -30,
           child: GestureDetector(
             onTap: () {
-              // TODO: Add action for PeeView logo button
               debugPrint("PeeView logo tapped!");
+              // 👉 You could also link this to a custom screen if needed
             },
             child: CircleAvatar(
               radius: 32,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'urine_color_screen.dart';
 
 class ManualEntryScreen extends StatelessWidget {
@@ -8,6 +9,7 @@ class ManualEntryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    final FirebaseAuth _auth = FirebaseAuth.instance;
 
     return Scaffold(
       body: SafeArea(
@@ -41,7 +43,7 @@ class ManualEntryScreen extends StatelessWidget {
               ),
               const SizedBox(height: 30),
 
-              // Fixed checkboxes (indented)
+              // Fixed checkboxes
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -59,7 +61,7 @@ class ManualEntryScreen extends StatelessWidget {
               const Align(
                 alignment: Alignment.center,
                 child: Padding(
-                  padding: EdgeInsets.only(right: 150), // adjust value for left shift
+                  padding: EdgeInsets.only(right: 150),
                   child: Text(
                     "What you’ll need:",
                     textAlign: TextAlign.center,
@@ -98,19 +100,46 @@ class ManualEntryScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   onPressed: () async {
-                    // Create a new test session in Firestore
-                    final docRef = await _firestore.collection("urine_tests").add({
+                    final currentUser = _auth.currentUser;
+
+                    if (currentUser == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("No logged in user found."),
+                        ),
+                      );
+                      return;
+                    }
+
+                    // 🔹 Fetch user profile from `users` collection
+                    final userDoc = await _firestore
+                        .collection("users")
+                        .doc(currentUser.uid)
+                        .get();
+
+                    String userName = "User";
+                    if (userDoc.exists) {
+                      final data = userDoc.data() as Map<String, dynamic>;
+                      userName = data["name"] ?? "User";
+                    }
+
+                    // 🔹 Create a new test session with userId and name
+                    final docRef =
+                    await _firestore.collection("urine_tests").add({
                       "startedAt": FieldValue.serverTimestamp(),
                       "completed": false,
+                      "userId": currentUser.uid,
+                      "userName": userName,
                     });
 
-                    final sessionId = docRef.id; // get the session ID
+                    final sessionId = docRef.id;
 
-                    // Navigate to UrineColorScreen and pass sessionId
+                    // Navigate to UrineColorScreen
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => UrineColorScreen(sessionId: sessionId),
+                        builder: (context) =>
+                            UrineColorScreen(sessionId: sessionId),
                       ),
                     );
                   },
@@ -144,7 +173,7 @@ class ManualEntryScreen extends StatelessWidget {
   // Fixed checked checkbox widget
   static Widget _checkItem(String text) {
     return Padding(
-      padding: const EdgeInsets.only(left: 33.0), // indent to the right
+      padding: const EdgeInsets.only(left: 33.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:peeview/screens/manualentry/results_screen.dart'; // ✅ Import ResultsScreen
+import 'package:peeview/screens/manualentry/results/results_screen.dart'; // ✅ Import ResultsScreen
 
 class CompletedScreen extends StatelessWidget {
   final String sessionId;
