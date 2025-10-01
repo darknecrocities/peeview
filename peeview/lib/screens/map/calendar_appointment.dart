@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../customize_appbar_screen.dart';
 import '/widgets/customize_navbar.dart';
-import 'appointment_result.dart';
+import '../appointment/appointment_result.dart';
 
 class CalendarAppointmentScreen extends StatefulWidget {
   final String doctorName;

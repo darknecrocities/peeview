@@ -1,9 +1,11 @@
 // File: lib/screens/appointment_screen.dart
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:peeview/widgets/customize_navbar.dart';
 import 'package:peeview/screens/customize_appbar_screen.dart';
 import 'package:peeview/screens/map/clinic_screen.dart';
-
+import 'package:intl/intl.dart';
 
 class AppointmentScreen extends StatefulWidget {
   const AppointmentScreen({super.key});
@@ -23,6 +25,7 @@ class _AppointmentScreenState extends State<AppointmentScreen>
     _tabController = TabController(length: 3, vsync: this);
   }
 
+  /// Build doctor card widget
   Widget _buildDoctorCard({
     required String doctorName,
     required String clinic,
@@ -54,9 +57,10 @@ class _AppointmentScreenState extends State<AppointmentScreen>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 5,
-              offset: const Offset(0, 2)),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
@@ -70,48 +74,184 @@ class _AppointmentScreenState extends State<AppointmentScreen>
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(doctorName,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text(clinic,
-                          style: const TextStyle(
-                              color: Colors.black54, fontSize: 13)),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Text(dateTime,
-                              style: const TextStyle(
-                                  color: Colors.black54, fontSize: 12)),
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: statusColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: statusColor),
-                            ),
-                            child: Text(status,
-                                style: TextStyle(
-                                    color: statusColor,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w500)),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(doctorName,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(clinic,
+                        style: const TextStyle(
+                            color: Colors.black54, fontSize: 13)),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Text(dateTime,
+                            style: const TextStyle(
+                                color: Colors.black54, fontSize: 12)),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: statusColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: statusColor),
                           ),
-                        ],
-                      ),
-                    ]),
+                          child: Text(status,
+                              style: TextStyle(
+                                  color: statusColor,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w500)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               )
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: actions,
-          )
+          if (actions.isNotEmpty)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: actions,
+            )
         ],
       ),
+    );
+  }
+
+  /// Build appointments list filtered by status
+  Widget _appointmentList(String filterStatus) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return const Center(child: Text("Please log in to see appointments"));
+    }
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('appointments')
+          .where('patientName', isEqualTo: user.displayName ?? "") // ✅ FIXED
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final docs = snapshot.data?.docs ?? [];
+
+        final filteredDocs = docs.where((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+
+          // Handle date as String (since that's how it's saved in Firestore)
+          final dateRaw = data['date'];
+          DateTime date;
+          if (dateRaw is Timestamp) {
+            date = dateRaw.toDate();
+          } else if (dateRaw is String) {
+            date = DateTime.tryParse(dateRaw) ?? DateTime.now();
+          } else {
+            return false;
+          }
+
+          // No explicit status in your data → compute it
+          String status;
+          if ((data['status'] ?? "").toString().isNotEmpty) {
+            status = data['status'];
+          } else {
+            status = date.isAfter(DateTime.now())
+                ? "Upcoming"
+                : "Completed";
+          }
+
+          if (filterStatus == "Upcoming") {
+            return status == "Upcoming";
+          }
+          if (filterStatus == "Completed") {
+            return status == "Completed";
+          }
+          if (filterStatus == "Cancelled") {
+            return status == "Cancelled";
+          }
+          return false;
+        }).toList();
+
+        if (filteredDocs.isEmpty) {
+          return const Center(child: Text("No appointments found"));
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: filteredDocs.length,
+          itemBuilder: (context, index) {
+            final data = filteredDocs[index].data() as Map<String, dynamic>;
+
+            final date = (data['date'] is Timestamp)
+                ? (data['date'] as Timestamp).toDate()
+                : DateTime.tryParse(data['date'].toString()) ?? DateTime.now();
+
+            final formattedDate =
+            DateFormat("MMM dd, yyyy | hh:mm a").format(date);
+
+            // Compute status if missing
+            String status;
+            if ((data['status'] ?? "").toString().isNotEmpty) {
+              status = data['status'];
+            } else {
+              status = date.isAfter(DateTime.now())
+                  ? "Upcoming"
+                  : "Completed";
+            }
+
+            return _buildDoctorCard(
+              doctorName: data['doctorName'] ?? "Unknown Doctor",
+              clinic: data['doctorClinic'] ?? "Unknown Clinic",
+              dateTime: formattedDate,
+              status: status,
+              imageUrl: data['doctorImage'] ??
+                  "https://randomuser.me/api/portraits/men/32.jpg",
+              actions: status == "Upcoming"
+                  ? [
+                OutlinedButton(
+                  onPressed: () {
+                    FirebaseFirestore.instance
+                        .collection('appointments')
+                        .doc(filteredDocs[index].id)
+                        .update({"status": "Cancelled"});
+                  },
+                  child: const Text("Cancel Appointment"),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    debugPrint("Reschedule tapped");
+                  },
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue),
+                  child: const Text("Reschedule"),
+                ),
+              ]
+                  : status == "Completed"
+                  ? [
+                OutlinedButton(
+                  onPressed: () {
+                    debugPrint("Book again tapped");
+                  },
+                  child: const Text("Book again"),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    debugPrint("Leave a Review tapped");
+                  },
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue),
+                  child: const Text("Leave a Review"),
+                ),
+              ]
+                  : [],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -130,7 +270,6 @@ class _AppointmentScreenState extends State<AppointmentScreen>
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section Title
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Center(
@@ -144,9 +283,6 @@ class _AppointmentScreenState extends State<AppointmentScreen>
               ),
             ),
           ),
-
-
-          // Tab bar
           TabBar(
             controller: _tabController,
             indicatorColor: Colors.blue,
@@ -155,122 +291,21 @@ class _AppointmentScreenState extends State<AppointmentScreen>
             tabs: const [
               Tab(text: "Upcoming"),
               Tab(text: "Completed"),
-              Tab(text: "Cancelled",),
+              Tab(text: "Cancelled"),
             ],
           ),
-
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
-                // UPCOMING
-                ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    _buildDoctorCard(
-                      doctorName: "Dr. Antonio Dela Cruz, MD",
-                      clinic: "HealthPlus Clinic",
-                      dateTime: "August 22, 2025 | 11:00 AM",
-                      status: "Upcoming",
-                      imageUrl:
-                      "https://randomuser.me/api/portraits/men/32.jpg",
-                      actions: [
-                        OutlinedButton(
-                          onPressed: () {
-                            debugPrint("Cancel Appointment tapped");
-                          },
-                          child: const Text("Cancel Appointment"),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            debugPrint("Reschedule tapped");
-                          },
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue),
-                          child: const Text("Reschedule"),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-
-                // COMPLETED
-                ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    _buildDoctorCard(
-                      doctorName: "Dr. Antonio Dela Cruz, MD",
-                      clinic: "HealthPlus Clinic",
-                      dateTime: "August 22, 2025 | 11:00 AM",
-                      status: "Completed",
-                      imageUrl:
-                      "https://randomuser.me/api/portraits/men/32.jpg",
-                      actions: [
-                        OutlinedButton(
-                          onPressed: () {
-                            debugPrint("Book again tapped");
-                          },
-                          child: const Text("Book again"),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            debugPrint("Leave a Review tapped");
-                          },
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue),
-                          child: const Text("Leave a Review"),
-                        ),
-                      ],
-                    ),
-                    _buildDoctorCard(
-                      doctorName: "Dr. Isabelle Ramos, MD",
-                      clinic: "MediCare Wellness Center",
-                      dateTime: "July 15, 2025 | 09:00 AM",
-                      status: "Completed",
-                      imageUrl:
-                      "https://randomuser.me/api/portraits/women/44.jpg",
-                      actions: [
-                        OutlinedButton(
-                          onPressed: () {
-                            debugPrint("Book again tapped");
-                          },
-                          child: const Text("Book again"),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            debugPrint("Leave a Review tapped");
-                          },
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue),
-                          child: const Text("Leave a Review"),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-
-                // CANCELLED
-                ListView(
-                  padding: const EdgeInsets.all(12),
-                  children: [
-                    _buildDoctorCard(
-                      doctorName: "Dr. Antonio Dela Cruz, MD",
-                      clinic: "HealthPlus Clinic",
-                      dateTime: "September 10, 2025 | 10:00 AM",
-                      status: "Cancelled",
-                      imageUrl:
-                      "https://randomuser.me/api/portraits/men/32.jpg",
-                      actions: [],
-                    ),
-                  ],
-                ),
+                _appointmentList("Upcoming"),
+                _appointmentList("Completed"),
+                _appointmentList("Cancelled"),
               ],
             ),
           ),
         ],
       ),
-
-      // Floating Add Button
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -281,8 +316,6 @@ class _AppointmentScreenState extends State<AppointmentScreen>
         backgroundColor: Colors.blue,
         child: const Icon(Icons.add, size: 28),
       ),
-
-
       bottomNavigationBar: CustomizeNavBar(
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
