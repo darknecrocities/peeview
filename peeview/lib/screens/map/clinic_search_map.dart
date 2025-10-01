@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 import 'package:csv/csv.dart';
+import 'doctors_screen.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 class ClinicSearchMap extends StatefulWidget {
@@ -249,7 +250,12 @@ class _ClinicSearchMapState extends State<ClinicSearchMap> {
                       const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () {
-                          // TODO: handle booking action
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => DoctorScreen(), // ✅ navigate
+                            ),
+                          );
                         },
                         child: const Text("Book Now"),
                       ),

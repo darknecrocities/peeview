@@ -1,24 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../customize_appbar_screen.dart';
+import 'package:peeview/widgets/customize_navbar.dart';
 import 'urine_color_screen.dart';
+import 'package:peeview/widgets/customize_back_button.dart'; // ✅ Import the back button
 
-class ManualEntryScreen extends StatelessWidget {
+class ManualEntryScreen extends StatefulWidget {
   const ManualEntryScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-    final FirebaseAuth _auth = FirebaseAuth.instance;
+  State<ManualEntryScreen> createState() => _ManualEntryScreenState();
+}
 
+class _ManualEntryScreenState extends State<ManualEntryScreen> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  int _selectedIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: CustomizeAppBarScreen(
+        onNotificationsTap: () {
+          debugPrint("Notifications tapped");
+        },
+        onProfileTap: () {
+          debugPrint("Profile tapped");
+        },
+      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center, // center vertically
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // ✅ Custom Back Button
+              const CustomizeBackButton(),
+
+              const SizedBox(height: 12),
+
               // Header
               const Center(
                 child: Text(
@@ -86,7 +109,7 @@ class ManualEntryScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 150),
+              const SizedBox(height: 60),
 
               // Get Started button
               SizedBox(
@@ -166,6 +189,15 @@ class ManualEntryScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: CustomizeNavBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+          debugPrint("Selected Nav Index: $_selectedIndex");
+        },
       ),
     );
   }

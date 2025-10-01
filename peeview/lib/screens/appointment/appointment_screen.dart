@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:peeview/widgets/customize_navbar.dart';
 import 'package:peeview/screens/customize_appbar_screen.dart';
+import 'package:peeview/screens/map/clinic_screen.dart';
+
 
 class AppointmentScreen extends StatefulWidget {
   const AppointmentScreen({super.key});
@@ -271,11 +273,15 @@ class _AppointmentScreenState extends State<AppointmentScreen>
       // Floating Add Button
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          debugPrint("Add appointment tapped");
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ClinicScreen()),
+          );
         },
         backgroundColor: Colors.blue,
         child: const Icon(Icons.add, size: 28),
       ),
+
 
       bottomNavigationBar: CustomizeNavBar(
         currentIndex: _selectedIndex,
