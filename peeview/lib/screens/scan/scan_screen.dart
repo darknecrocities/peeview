@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'customize_appbar_screen.dart';
-import '../widgets/customize_navbar.dart';
+import '../customize_appbar_screen.dart';
+import '../../widgets/customize_navbar.dart';
 import 'scan_upload_screen.dart';
 
 class ScanScreen extends StatefulWidget {
@@ -11,7 +11,7 @@ class ScanScreen extends StatefulWidget {
 }
 
 class _ScanScreenState extends State<ScanScreen> {
-  int _currentIndex = 1; // Adjust depending on navbar index
+  int _currentIndex = 1; // Navbar index for Scan
 
   void _onNavTap(int index) {
     setState(() => _currentIndex = index);
@@ -112,18 +112,24 @@ class _ScanScreenState extends State<ScanScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const ScanUploadScreen()),
+                      builder: (context) => const ScanUploadScreen(),
+                    ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0062C8),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30)),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: const Text(
                   "Get Started",
-                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../screens/scan_screen.dart';  // ✅ Import ScanScreen
+import '../screens/scan/scan_screen.dart';  // ✅ Import ScanScreen
 import '../screens/manualentry/manual_entry_screen.dart';
 
 class DashboardCategories extends StatelessWidget {

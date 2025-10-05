@@ -47,7 +47,8 @@ dependencies:
     # Pick images from gallery
   image_picker: ^1.1.2
   image: ^4.0.17
-  file_picker: ^6.1.10
+  file_picker: ^8.0.0
+  percent_indicator: ^4.2.5
 
     # Google ML Kit for on-device OCR
   google_mlkit_text_recognition: ^0.14.0
