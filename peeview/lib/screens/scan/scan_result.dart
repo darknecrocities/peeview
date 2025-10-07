@@ -16,77 +16,106 @@ class ScanResultScreen extends StatelessWidget {
     final int nonCkdProbability = diseasePrediction["nonCkdProbability"] ?? 100;
     final String status = results["status"] ?? "LOW";
 
+    Color getStatusColor() {
+      switch (status.toUpperCase()) {
+        case "HIGH":
+          return Colors.red;
+        case "MODERATE":
+          return Colors.orange;
+        default:
+          return Colors.green;
+      }
+    }
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8FAFF),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0,
+        elevation: 1,
+        centerTitle: true,
         title: const Text(
           "peeView Test Result",
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
         iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // 🟦 Header
+            // 🟦 Header Card
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E63D0),
-                borderRadius: BorderRadius.circular(12),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1E63D0), Color(0xFF3A82F7)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.blue.withOpacity(0.3),
+                      offset: const Offset(0, 4),
+                      blurRadius: 10)
+                ],
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
+                  const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text("peeView Test Result",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold)),
-                      SizedBox(height: 4),
+                    children: [
+                      Text(
+                        "peeView Test Result",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 19,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 6),
                       Text("October 5, 2025  •  10:15 PM",
                           style:
-                          TextStyle(color: Colors.white70, fontSize: 12)),
+                          TextStyle(color: Colors.white70, fontSize: 13)),
                     ],
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 6),
+                        horizontal: 18, vertical: 8),
                     decoration: BoxDecoration(
-                      color: status == "HIGH"
-                          ? Colors.red
-                          : status == "MODERATE"
-                          ? Colors.orange
-                          : Colors.green,
+                      color: getStatusColor(),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       status,
                       style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13),
                     ),
                   )
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
-            // 🟩 AI Insights
+            // 🧠 AI Insights Card
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                      color: Colors.black.withOpacity(0.05), blurRadius: 6),
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
                 ],
               ),
               child: Column(
@@ -98,21 +127,26 @@ class ScanResultScreen extends StatelessWidget {
                           fontSize: 18,
                           color: Color(0xFF1E63D0))),
                   const SizedBox(height: 12),
-                  Text(aiInsights,
-                      textAlign: TextAlign.justify,
-                      style: const TextStyle(
-                          fontSize: 14, height: 1.5, color: Colors.black87)),
-                  const SizedBox(height: 12),
+                  Text(
+                    aiInsights,
+                    textAlign: TextAlign.justify,
+                    style: const TextStyle(
+                        fontSize: 15,
+                        height: 1.6,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w400),
+                  ),
+                  const SizedBox(height: 14),
                   RichText(
                     text: TextSpan(
                       style: const TextStyle(
-                          fontSize: 14, height: 1.5, color: Colors.black87),
+                          fontSize: 15, color: Colors.black87, height: 1.5),
                       children: [
                         const TextSpan(
                             text: "Suggested Action: ",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black)),
+                                color: Color(0xFF1E63D0))),
                         TextSpan(text: suggestedAction),
                       ],
                     ),
@@ -120,56 +154,86 @@ class ScanResultScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 18),
 
-            // 📅 Schedule Button
-            OutlinedButton(
-              onPressed: () {},
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30)),
-                side: const BorderSide(color: Color(0xFF1E63D0)),
+            // 📅 Button
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {},
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30)),
+                  side: const BorderSide(color: Color(0xFF1E63D0), width: 1.5),
+                ),
+                child: const Text("SCHEDULE A CONSULTATION",
+                    style: TextStyle(
+                        color: Color(0xFF1E63D0),
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5)),
               ),
-              child: const Text("SCHEDULE A CONSULTATION",
-                  style: TextStyle(color: Color(0xFF1E63D0))),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 22),
 
-            // 🟥 Disease Prediction
+            // 🔵 Disease Prediction Card
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(22),
+              width: double.infinity,
               decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black.withOpacity(0.05), blurRadius: 6),
-                  ]),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Text("Disease Prediction",
-                      style:
-                      TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(height: 12),
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                          color: Colors.black87)),
+                  const SizedBox(height: 18),
                   CircularPercentIndicator(
-                    radius: 60,
+                    radius: 70,
                     lineWidth: 12,
+                    animation: true,
+                    animationDuration: 1200,
                     percent: ckdProbability / 100,
-                    center: Text("$ckdProbability%",
-                        style: const TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold)),
-                    progressColor: Colors.red,
-                    backgroundColor: Colors.grey[200]!,
+                    center: Text(
+                      "$ckdProbability%",
+                      style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87),
+                    ),
+                    progressColor: Colors.redAccent,
+                    backgroundColor: Colors.grey.shade200,
+                    circularStrokeCap: CircularStrokeCap.round,
                   ),
-                  const SizedBox(height: 8),
-                  const Text("Chronic Kidney Disease (CKD)"),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
+                  const Text(
+                    "Chronic Kidney Disease (CKD)",
+                    style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 10),
                   Text("Non-CKD: $nonCkdProbability%",
-                      style: const TextStyle(fontSize: 14)),
-                  const SizedBox(height: 4),
+                      style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.black87)),
+                  const SizedBox(height: 6),
                   const Text("Probability",
-                      style: TextStyle(color: Colors.grey)),
+                      style:
+                      TextStyle(fontSize: 13, color: Colors.grey)),
                 ],
               ),
             ),
@@ -179,4 +243,3 @@ class ScanResultScreen extends StatelessWidget {
     );
   }
 }
-

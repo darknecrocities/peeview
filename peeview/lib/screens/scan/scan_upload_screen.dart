@@ -146,26 +146,27 @@ class _ScanUploadScreenState extends State<ScanUploadScreen>
     }
   }
 
-  Future<void> _sendToGemini(String text) async {
-    const apiKey = "YOUR_API_KEY";
+  Future<void> _sendToGemini(String ocrText) async {
+    const apiKey = "APIKEY";
     final url = Uri.parse(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey");
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey",
+    );
 
+    // 🧠 AI prompt: 80-word insight + numeric probability
     final prompt = """
-You are an AI medical assistant analyzing urinalysis results. 
-Return ONLY a JSON object with the following fields:
+You are an AI medical assistant analyzing urinalysis results.
 
-{
-  "aiInsights": "An 80-word explanation of the urinalysis results, highlighting key findings (e.g., WBC, protein, bacteria, etc.).",
-  "suggestedAction": "1-2 sentence recommendation for the patient.",
-  "diseasePrediction": {
-    "ckdProbability": 0-100,
-    "nonCkdProbability": 0-100
-  },
-  "status": "LOW or MODERATE or HIGH"
-}
+Below is the OCR text from a patient's urine test:
 
-Make sure probabilities sum close to 100 and explanation is exactly 80 words.
+\"\"\"$ocrText\"\"\"
+
+Tasks:
+1. Estimate the likelihood (0–100%) that the patient has Chronic Kidney Disease (CKD).
+2. Provide an approximately 80-word medical interpretation of the urinalysis findings.
+3. End your response with this exact format:
+CKD Probability: [number]%
+
+Keep your response plain text. Do not use JSON, bullet points, or markdown.
 """;
 
     final body = jsonEncode({
@@ -179,55 +180,74 @@ Make sure probabilities sum close to 100 and explanation is exactly 80 words.
     });
 
     try {
-      final response = await http.post(url,
-          headers: {"Content-Type": "application/json"}, body: body);
+      // 📡 Send request
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: body,
+      );
 
+      // 🧩 Close loading dialog if any
       if (mounted) {
         try {
-          Navigator.of(context).pop(); // close progress dialog
+          Navigator.of(context).pop();
         } catch (_) {}
       }
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        String rawText = "";
+        String aiText = "";
         try {
-          rawText = data["candidates"][0]["content"]["parts"][0]["text"] ?? "";
+          aiText = data["candidates"][0]["content"]["parts"][0]["text"] ?? "";
         } catch (_) {
-          rawText = "";
+          aiText = "No insights generated. Please retry with a clearer image.";
         }
 
-        Map<String, dynamic> parsedResult = {};
-        try {
-          // ✅ Parse the JSON string returned by Gemini
-          parsedResult = jsonDecode(rawText);
-        } catch (e) {
-          parsedResult = {
-            "aiInsights":
-            "No valid analysis generated. Please retry with a clearer image.",
-            "suggestedAction": "Consult a healthcare professional for further evaluation.",
-            "diseasePrediction": {
-              "ckdProbability": 0,
-              "nonCkdProbability": 100,
-            },
-            "status": "LOW"
-          };
+        // 🔍 Extract probability value from Gemini response
+        final regex = RegExp(r'CKD Probability:\s*(\d+)%');
+        int ckdProbability = 0;
+        final match = regex.firstMatch(aiText);
+        if (match != null) {
+          ckdProbability = int.tryParse(match.group(1) ?? "0") ?? 0;
         }
 
+        // 🎯 Compute other fields
+        int nonCkdProbability = (100 - ckdProbability).clamp(0, 100);
+        String status;
+        if (ckdProbability >= 70) {
+          status = "HIGH";
+        } else if (ckdProbability >= 40) {
+          status = "MODERATE";
+        } else {
+          status = "LOW";
+        }
+
+        // 🧭 Navigate to results page
         if (!mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ScanResultScreen(results: parsedResult),
+            builder: (_) => ScanResultScreen(results: {
+              "aiInsights": aiText,
+              "suggestedAction":
+              "Consult a healthcare professional for further advice.",
+              "diseasePrediction": {
+                "ckdProbability": ckdProbability,
+                "nonCkdProbability": nonCkdProbability,
+              },
+              "status": status,
+            }),
           ),
         );
       } else {
         debugPrint("Gemini API HTTP ${response.statusCode}: ${response.body}");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(
-                  'Gemini API error (${response.statusCode}). Try again.')),
+            content: Text(
+              'Gemini API error (${response.statusCode}). Try again.',
+            ),
+          ),
         );
       }
     } catch (e) {
@@ -242,7 +262,6 @@ Make sure probabilities sum close to 100 and explanation is exactly 80 words.
       );
     }
   }
-
 
 
 
