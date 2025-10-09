@@ -97,16 +97,11 @@ class CustomizeNavBar extends StatelessWidget {
               debugPrint("PeeView logo tapped!");
               // 👉 You could also link this to a custom screen if needed
             },
-            child: CircleAvatar(
-              radius: 32,
-              backgroundColor: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(6.0),
-                child: Image.asset(
-                  "lib/assets/images/peeview_logo_nobg.png",
-                  height: 42,
-                ),
-              ),
+            child: Image.asset(
+              "lib/assets/images/peeviewrevise.png",
+              fit: BoxFit.cover,
+              height: 74,
+              width: 74,
             ),
           ),
         ),

@@ -5,95 +5,32 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
-import 'package:csv/csv.dart';
 import 'doctors_screen.dart';
-import 'package:flutter/services.dart' show rootBundle;
 
 class ClinicSearchMap extends StatefulWidget {
-  final List<Map<String, dynamic>> clinics;
-
-  // 👇 add optional selected clinic
-  final Map<String, dynamic>? selectedClinic;
-
-  const ClinicSearchMap({
-    Key? key,
-    required this.clinics,
-    this.selectedClinic,
-  }) : super(key: key);
+  const ClinicSearchMap({Key? key}) : super(key: key);
 
   @override
   State<ClinicSearchMap> createState() => _ClinicSearchMapState();
 }
 
-
 class _ClinicSearchMapState extends State<ClinicSearchMap> {
   final Completer<GoogleMapController> _controller = Completer();
   final Location _location = Location();
-  LocationData? _currentLocation;
 
+  LocationData? _currentLocation;
   Set<Marker> _markers = {};
-  String _searchQuery = "clinic";
   bool _loading = false;
 
-  Timer? _debounce;
-  Map<String, dynamic>? _selectedClinic;
-  List<Map<String, dynamic>> _allClinics = [];
-
-  static const String apiKey = "AIzaSyDE--Gb6spVlLkqlylj3vPBphoKM9aqllI";
+  static const String apiKey = "AIzaSyDE--Gb6spVlLkqlylj3vPBphoKM9aqllI"; // 🔑 Replace with your valid key
 
   @override
   void initState() {
     super.initState();
-    _loadClinicsFromCSV(); // load local csv
-    if (widget.clinics != null && widget.clinics!.isNotEmpty) {
-      _setMarkersFromList(widget.clinics!);
-    } else {
-      _getCurrentLocation();
-    }
+    _getCurrentLocation();
   }
 
-  /// Load clinics from philippine.csv in assets
-  Future<void> _loadClinicsFromCSV() async {
-    final rawData = await rootBundle.loadString("lib/data/philippines.csv");
-    List<List<dynamic>> rows = const CsvToListConverter().convert(rawData);
-
-    final clinics = rows.skip(1).map((row) {
-      return {
-        "name": row.isNotEmpty && row[0] != null ? row[0].toString() : "Unnamed Clinic",
-        "address": row.length > 1 && row[1] != null ? row[1].toString() : "No address provided",
-        "lat": row.length > 2 && row[2] != null ? (row[2] as num).toDouble() : 0.0,
-        "lng": row.length > 3 && row[3] != null ? (row[3] as num).toDouble() : 0.0,
-        "status": row.length > 4 && row[4] != null ? row[4].toString() : "Open",
-        "distance": row.length > 5 && row[5] != null ? row[5].toString() : "",
-      };
-    }).toList();
-
-    setState(() {
-      _allClinics = clinics;
-    });
-  }
-
-
-  void _setMarkersFromList(List<Map<String, dynamic>> clinicsList) {
-    final newMarkers = clinicsList.map((clinic) {
-      final id = clinic["name"] ?? clinic["address"] ?? clinic["lat"].toString();
-      return Marker(
-        markerId: MarkerId(id),
-        position: LatLng(clinic["lat"], clinic["lng"]),
-        infoWindow: InfoWindow(title: clinic["name"], snippet: clinic["address"]),
-        onTap: () {
-          setState(() {
-            _selectedClinic = clinic;
-          });
-        },
-      );
-    }).toSet();
-
-    setState(() {
-      _markers = newMarkers;
-    });
-  }
-
+  /// ✅ Get user location and search nearby clinics within 20 km
   Future<void> _getCurrentLocation() async {
     try {
       bool serviceEnabled = await _location.serviceEnabled();
@@ -108,58 +45,137 @@ class _ClinicSearchMapState extends State<ClinicSearchMap> {
         if (permissionGranted != PermissionStatus.granted) return;
       }
 
-      _currentLocation = await _location.getLocation();
+      final loc = await _location.getLocation();
+      if (loc.latitude == null || loc.longitude == null) return;
 
-      if (_currentLocation != null && _controller.isCompleted) {
-        final GoogleMapController controller = await _controller.future;
-        controller.animateCamera(CameraUpdate.newLatLngZoom(
-          LatLng(_currentLocation!.latitude!, _currentLocation!.longitude!),
-          14,
-        ));
-      }
+      _currentLocation = loc;
 
-      if ((widget.clinics == null || widget.clinics!.isEmpty) &&
-          _allClinics.isNotEmpty) {
-        _setMarkersFromList(_allClinics.take(5).toList());
-      }
+      final GoogleMapController controller = await _controller.future;
+      controller.animateCamera(
+        CameraUpdate.newLatLngZoom(
+          LatLng(loc.latitude!, loc.longitude!),
+          13,
+        ),
+      );
+
+      await _searchNearbyHospitals(loc.latitude!, loc.longitude!);
+      _addCurrentLocationMarker();
     } catch (e) {
-      debugPrint("Error getting location: $e");
+      debugPrint("❌ Error getting location: $e");
     }
   }
 
-  /// Debounced search from CSV
-  void _onSearchChanged(String query) {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      if (query.isEmpty) {
-        // Reset markers to all or default first few clinics
-        _setMarkersFromList(_allClinics.take(5).toList());
-        return;
-      }
+  /// ✅ Add user marker
+  void _addCurrentLocationMarker() {
+    if (_currentLocation == null) return;
 
-      final filtered = _allClinics.where((clinic) {
-        final name = (clinic["name"] ?? "").toString().toLowerCase();
-        final address = (clinic["address"] ?? "").toString().toLowerCase();
-        return name.contains(query.toLowerCase()) || address.contains(query.toLowerCase());
-      }).toList();
-
-      if (filtered.isNotEmpty) {
-        _setMarkersFromList(filtered);
-        // Optional: auto-zoom to first filtered clinic
-        _goToLatLng(filtered.first["lat"], filtered.first["lng"]);
-      } else {
-        // Clear markers if nothing matches
-        setState(() {
-          _markers = {};
-        });
-      }
+    setState(() {
+      _markers.add(
+        Marker(
+          markerId: const MarkerId("currentLocation"),
+          position: LatLng(_currentLocation!.latitude!, _currentLocation!.longitude!),
+          infoWindow: const InfoWindow(title: "📍 You are here"),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+        ),
+      );
     });
   }
 
+  /// ✅ Search nearby clinics using Google Places API (radius: 20 km)
+  Future<void> _searchNearbyHospitals(double lat, double lng) async {
+    setState(() => _loading = true);
 
-  Future<void> _goToLatLng(double lat, double lng, {double zoom = 15}) async {
-    final GoogleMapController controller = await _controller.future;
-    await controller.animateCamera(CameraUpdate.newLatLngZoom(LatLng(lat, lng), zoom));
+    const double searchRadius = 20000; // 20 km radius
+    final url = Uri.parse(
+      "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
+          "?location=$lat,$lng"
+          "&radius=$searchRadius"
+          "&type=hospital"
+          "&keyword=clinic|medical|health"
+          "&key=$apiKey",
+    );
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode != 200) {
+        debugPrint("Google API error: ${response.statusCode}");
+        return;
+      }
+
+      final data = jsonDecode(response.body);
+      final results = (data["results"] as List).map((place) {
+        return {
+          "name": place["name"] ?? "Unknown Clinic",
+          "address": place["vicinity"] ?? "No address available",
+          "lat": place["geometry"]["location"]["lat"],
+          "lng": place["geometry"]["location"]["lng"],
+          "status": place["business_status"] ?? "Open",
+        };
+      }).toList();
+
+      if (results.isEmpty) {
+        debugPrint("⚠️ No nearby clinics found");
+      }
+
+      final markers = results.map((clinic) {
+        return Marker(
+          markerId: MarkerId(clinic["name"]),
+          position: LatLng(clinic["lat"], clinic["lng"]),
+          infoWindow: InfoWindow(
+            title: clinic["name"],
+            snippet: clinic["address"],
+          ),
+          onTap: () => _showClinicCard(clinic),
+        );
+      }).toSet();
+
+      setState(() {
+        _markers = {..._markers, ...markers};
+      });
+    } catch (e) {
+      debugPrint("❌ Error fetching nearby clinics: $e");
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  void _showClinicCard(Map<String, dynamic> clinic) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(clinic["name"], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 5),
+            Text(clinic["address"]),
+            const SizedBox(height: 5),
+            Text(
+              clinic["status"],
+              style: TextStyle(
+                color: (clinic["status"] ?? "").toString().toLowerCase() == "open"
+                    ? Colors.green
+                    : Colors.red,
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => DoctorScreen()));
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+              child: const Text("Book Now"),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -169,100 +185,32 @@ class _ClinicSearchMapState extends State<ClinicSearchMap> {
         children: [
           GoogleMap(
             initialCameraPosition: const CameraPosition(
-              target: LatLng(14.5995, 120.9842), // Manila default
+              target: LatLng(14.5995, 120.9842), // Default: Manila
               zoom: 6,
             ),
             myLocationEnabled: true,
             markers: _markers,
-            onMapCreated: (GoogleMapController controller) async {
-              if (!_controller.isCompleted) {
-                _controller.complete(controller);
-              }
-              if (_allClinics.isNotEmpty) {
-                final first = _allClinics.first;
-                await controller.animateCamera(CameraUpdate.newLatLngZoom(
-                  LatLng(first["lat"], first["lng"]),
-                  14,
-                ));
-              }
+            onMapCreated: (GoogleMapController controller) {
+              if (!_controller.isCompleted) _controller.complete(controller);
             },
           ),
 
-          // Search Bar
+          // 📍 Floating location button
           Positioned(
-            top: 50,
-            left: 20,
+            bottom: 80,
             right: 20,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(25),
-                boxShadow: const [
-                  BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
-                ],
-              ),
-              child: TextField(
-                onChanged: _onSearchChanged,
-                decoration: const InputDecoration(
-                  icon: Icon(Icons.search, color: Colors.blue),
-                  hintText: "Search clinics/hospitals...",
-                  border: InputBorder.none,
-                ),
-              ),
+            child: FloatingActionButton.extended(
+              backgroundColor: Colors.blueAccent,
+              icon: const Icon(Icons.my_location),
+              label: const Text("Use My Location"),
+              onPressed: _getCurrentLocation,
             ),
           ),
 
           if (_loading)
-            const Center(child: CircularProgressIndicator()),
-
-          // Bottom Card when marker is clicked
-          if (_selectedClinic != null)
-            Positioned(
-              bottom: 20,
-              left: 20,
-              right: 20,
-              child: Card(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                elevation: 6,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _selectedClinic?["name"] ?? "Unknown Clinic",
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(_selectedClinic?["address"] ?? "No address available"),
-                      if ((_selectedClinic?["distance"] ?? "").toString().isNotEmpty)
-                        Text("Distance: ${_selectedClinic!["distance"]}"),
-                      Text(
-                        (_selectedClinic?["status"] ?? "Open").toString(),
-                        style: TextStyle(
-                          color: (_selectedClinic?["status"] ?? "Open").toString().toLowerCase() == "open"
-                              ? Colors.green
-                              : Colors.red,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => DoctorScreen(), // ✅ navigate
-                            ),
-                          );
-                        },
-                        child: const Text("Book Now"),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+            Container(
+              color: Colors.black26,
+              child: const Center(child: CircularProgressIndicator()),
             ),
         ],
       ),

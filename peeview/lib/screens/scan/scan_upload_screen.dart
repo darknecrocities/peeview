@@ -147,7 +147,7 @@ class _ScanUploadScreenState extends State<ScanUploadScreen>
   }
 
   Future<void> _sendToGemini(String ocrText) async {
-    const apiKey = "APIKEY";
+    const apiKey = "AIzaSyCYpADok1bJHn6dy5RHPcb_HaPL1ld3mmM";
     final url = Uri.parse(
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey",
     );
