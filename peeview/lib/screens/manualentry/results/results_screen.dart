@@ -1,19 +1,16 @@
-// File: lib/screens/results_screen.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:peeview/screens/dashboard_screen.dart';
-import 'package:peeview/widgets/customize_navbar.dart';
+import 'package:peeview/widgets/customize_bottom_navbar.dart';
 import 'prediction_card.dart';
 import 'tracked_results.dart';
 import 'package:http/http.dart' as http;
 
-
 class ResultsScreen extends StatefulWidget {
-  final String? sessionId; // optional
-
+  final String? sessionId;
   const ResultsScreen({super.key, this.sessionId});
 
   @override
@@ -76,13 +73,16 @@ class _ResultsScreenState extends State<ResultsScreen> {
 
   // ---------------- AI Helper ---------------- //
   Future<String> _callGeminiAnalysisREST(
-      Map<String, dynamic> safeData, String status) async {
+    Map<String, dynamic> safeData,
+    String status,
+  ) async {
     try {
       final apiKey = _geminiApiKey; // already declared
       final url =
           "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey";
 
-      final prompt = """
+      final prompt =
+          """
 You are a helpful medical assistant. Analyze this urine test result and provide a clear conclusion.
 
 Guidelines:
@@ -103,10 +103,10 @@ Status: $status
           "contents": [
             {
               "parts": [
-                {"text": prompt}
-              ]
-            }
-          ]
+                {"text": prompt},
+              ],
+            },
+          ],
         }),
       );
 
@@ -148,7 +148,10 @@ Status: $status
       DocumentSnapshot<Map<String, dynamic>>? doc;
 
       if (widget.sessionId != null) {
-        doc = await _firestore.collection("urine_tests").doc(widget.sessionId).get();
+        doc = await _firestore
+            .collection("urine_tests")
+            .doc(widget.sessionId)
+            .get();
       } else {
         final snapshot = await _firestore
             .collection("urine_tests")
@@ -188,7 +191,10 @@ Status: $status
       } else {
         final userId = testData?["userId"];
         if (userId != null) {
-          final userDoc = await _firestore.collection("users").doc(userId).get();
+          final userDoc = await _firestore
+              .collection("users")
+              .doc(userId)
+              .get();
           if (userDoc.exists) {
             final userData = userDoc.data() as Map<String, dynamic>;
             userName = (userData["name"] ?? userName).toString();
@@ -197,7 +203,9 @@ Status: $status
       }
 
       // ---------------- Status Logic ---------------- //
-      final glucoseStr = (testData?["glucose_level"] ?? "").toString().toUpperCase();
+      final glucoseStr = (testData?["glucose_level"] ?? "")
+          .toString()
+          .toUpperCase();
 
       if (["+3", "+4"].contains(glucoseStr)) {
         status = "DANGER";
@@ -206,7 +214,6 @@ Status: $status
       } else {
         status = "HEALTHY";
       }
-
 
       // ---------------- CKD Probability ---------------- //
       final storedCkd = _parseDouble(testData?['ckdProbability']);
@@ -267,20 +274,24 @@ Status: $status
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text("Results saved successfully!"),
-            backgroundColor: Colors.green),
+          content: Text("Results saved successfully!"),
+          backgroundColor: Colors.green,
+        ),
       );
 
       Future.delayed(const Duration(milliseconds: 500), () {
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (_) => const DashboardScreen()));
+          context,
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        );
       });
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text("Failed to save results: $e"),
-            backgroundColor: Colors.red),
+          content: Text("Failed to save results: $e"),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -289,173 +300,157 @@ Status: $status
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Lab Test Results",
-            style: TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        automaticallyImplyLeading: false,
+        centerTitle: true,
+        toolbarHeight: 80,
+        title: const Text(
+          "Lab Test Results",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color(0XFF0062C8),
+            fontFamily: 'DM Sans',
+            fontSize: 28,
+          ),
+        ),
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              RichText(
-                text: TextSpan(
-                  style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(22),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const TextSpan(
-                        text: "Hello,\n",
-                        style: TextStyle(fontWeight: FontWeight.w500)),
-                    TextSpan(
-                        text: "$userName !",
+                    RichText(
+                      text: TextSpan(
                         style: const TextStyle(
-                            fontSize: 34,
-                            fontWeight: FontWeight.w900)),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text("Take a look at your results.",
-                  style: TextStyle(
-                      fontSize: 16, color: Colors.black54)),
-              const SizedBox(height: 22),
-
-              // Status card
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4))
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                        children: [
+                          const TextSpan(
+                            text: "Hello,\n",
+                            style: TextStyle(fontSize: 20),
+                          ),
+                          TextSpan(
+                            text: "$userName !",
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontFamily: 'DM Sans',
+                              color: Color(0XFF0062C8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Text(
+                      "Take a look at your results.",
+                      style: TextStyle(fontSize: 16, color: Colors.black54),
+                    ),
+                    SizedBox(height: 30),
+                    // AI Insights
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.25),
+                            blurRadius: 8,
+                            spreadRadius: 2,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("peeView Test Result",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 8),
-                          Text("$testDate • $testTime",
-                              style: const TextStyle(
-                                  color: Colors.white70)),
-                        ]),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 18),
-                      decoration: BoxDecoration(
-                        color: status == "HEALTHY"
-                            ? Colors.green
-                            : status == "WARNING"
-                            ? Colors.orange
-                            : Colors.red,
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      child: Text(status,
-                          style: const TextStyle(
-                              color: Colors.white,
+                          const Text(
+                            "AI Insights",
+                            style: TextStyle(
+                              color: Color(0XFF0062C8),
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              fontSize: 16)),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            geminiAnalysis ?? "",
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontSize: 14,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 30),
+                    PredictionCard(
+                      ckdProbability: _ckdProbability,
+                      nonCkdProbability: _nonCkdProbability,
+                      wbc: _parseInt(testData?['wbc_level']),
+                      bacteria: _parseInt(testData?['bacteria_level']),
+                      transparency: _parseInt(testData?['transparency']),
+                      protein: _parseInt(testData?['protein_level']),
+                    ),
+                    const SizedBox(height: 26),
+                    TrackedResultsCard(
+                      values: {
+                        'wbc_level': testData?['wbc_level'],
+                        'rbc_level': testData?['rbc_level'],
+                        'bacteria_level': testData?['bacteria_level'],
+                        'transparency': testData?['transparency'],
+                        'protein_level': testData?['protein_level'],
+                        'glucose_level': testData?['glucose_level'],
+                        'bilirubin_level': testData?['bilirubin_level'],
+                        'blood_level': testData?['blood_level'],
+                        'leukocytes_level': testData?['leukocytes_level'],
+                        'nitrites_level': testData?['nitrites_level'],
+                        'urobilinogen_level': testData?['urobilinogen_level'],
+                        'ketones_level': testData?['ketones_level'],
+                        'color': testData?['color'],
+                        'specific_gravity': testData?['specific_gravity'],
+                        'ph_level': testData?['ph_level'],
+                      },
+                    ),
+
+                    const SizedBox(height: 30),
+                    Center(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 40,
+                            vertical: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          backgroundColor: Color(0XFF0062C8),
+                        ),
+                        onPressed: _saveResults,
+                        child: const Text(
+                          "Done",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).padding.bottom + 20,
                     ),
                   ],
                 ),
               ),
-
-              const SizedBox(height: 26),
-
-              // AI Insights
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.grey.withOpacity(0.25),
-                        blurRadius: 8,
-                        spreadRadius: 2,
-                        offset: const Offset(0, 4))
-                  ],
-                ),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("AI Insights",
-                          style: TextStyle(
-                              color: Color(0xFF0057D9),
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 10),
-                      Text(geminiAnalysis ?? "",
-                          style: const TextStyle(
-                              color: Colors.black87,
-                              fontSize: 14,
-                              height: 1.5)),
-                    ]),
-              ),
-
-              const SizedBox(height: 30),
-
-              PredictionCard(
-                ckdProbability: _ckdProbability,
-                nonCkdProbability: _nonCkdProbability,
-                wbc: _parseInt(testData?['wbc_level']),
-                bacteria: _parseInt(testData?['bacteria_level']),
-                transparency: _parseInt(testData?['transparency']),
-                protein: _parseInt(testData?['protein_level']),
-              ),
-
-              const SizedBox(height: 26),
-
-              TrackedResultsCard(values: {
-                'wbc_level': testData?['wbc_level'],
-                'bacteria_level': testData?['bacteria_level'],
-                'transparency': testData?['transparency'],
-                'protein_level': testData?['protein_level'],
-              }),
-
-              const SizedBox(height: 30),
-
-              Center(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 40, vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    backgroundColor: Colors.blue,
-                  ),
-                  onPressed: _saveResults,
-                  child: const Text("Done",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
       bottomNavigationBar: CustomizeNavBar(
         currentIndex: _selectedIndex,
         onTap: (index) {

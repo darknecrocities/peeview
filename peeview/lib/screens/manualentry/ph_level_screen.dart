@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'protein_screen.dart'; // Import ProteinScreen
+import 'protein_screen.dart';
+import 'package:peeview/widgets/customize_manual_buttons.dart';
+import 'package:peeview/widgets/customize_nav_auth.dart';
 
 class PHLevelScreen extends StatefulWidget {
   final String sessionId; // session ID to save data under the same test
@@ -29,9 +31,9 @@ class _PHLevelScreenState extends State<PHLevelScreen> {
 
   Future<void> _savePHLevel() async {
     if (selectedPH == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a pH level")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please select a pH level")));
       return;
     }
 
@@ -40,10 +42,6 @@ class _PHLevelScreenState extends State<PHLevelScreen> {
       "ph_level": selectedPH,
       "ph_level_timestamp": FieldValue.serverTimestamp(),
     });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("pH Level saved ✅")),
-    );
 
     // Navigate to ProteinScreen
     Navigator.push(
@@ -67,14 +65,14 @@ class _PHLevelScreenState extends State<PHLevelScreen> {
           child: Container(
             width: double.infinity,
             margin: const EdgeInsets.symmetric(vertical: 6),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(vertical: 14),
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF00247D) : Colors.white,
+              color: isSelected ? const Color(0XFF0062C8) : Colors.white,
               border: Border.all(
-                color: isSelected ? const Color(0xFF00247D) : Colors.grey,
+                color: isSelected ? const Color(0XFF063365) : Colors.grey,
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(24),
             ),
             child: Text(
               ph,
@@ -93,107 +91,62 @@ class _PHLevelScreenState extends State<PHLevelScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: CustomizeNavAuth(
+        showBackButton: true,
+        showSkipButton: false,
+        showTitle: false,
+      ),
       body: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.all(18.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 40),
-                  const Text(
-                    "pH Level",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Acidity/Alkalinity level:",
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  _buildPHTiles(),
-
-                  const SizedBox(height: 116),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context); // Skip
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey,
-                            minimumSize: const Size(double.infinity, 46),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                          ),
-                          child: const Text(
-                            "Skip",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "pH Lvel",
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontFamily: 'DM Sans',
+                        fontWeight: FontWeight.bold,
+                        color: Color(0XFF063365),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _savePHLevel, // Save & navigate to ProteinScreen
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF00247D),
-                            minimumSize: const Size(double.infinity, 46),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                          ),
-                          child: const Text(
-                            "Next",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-                  const Align(
-                    alignment: Alignment.center,
-                    child: Text("Step 4 of 15", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            ),
-
-            Positioned(
-              top: 12,
-              left: 12,
-              child: GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
-                  child: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Acidity / alkalinity level:",
+                      style: TextStyle(fontSize: 16, color: Colors.black),
+                    ),
+                    SizedBox(height: 30),
+                    _buildPHTiles(),
+                    SizedBox(height: 30),
+                  ],
                 ),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CustomizeManualButtons(
+                    onNext: _savePHLevel,
+                    nextScreen: ProteinScreen(sessionId: widget.sessionId),
+                  ),
+                  SizedBox(height: 10),
+                  const Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      "Step 4 of 15",
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
           ],
         ),
       ),

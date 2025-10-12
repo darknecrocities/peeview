@@ -17,7 +17,7 @@ class LoginScreen extends StatelessWidget {
             // 🔹 Logo
             Center(
               child: Image.asset(
-                "lib/assets/images/peeView.png",
+                "lib/assets/images/app_logo_text.png",
                 height: 200,
               ),
             ),
@@ -67,7 +67,7 @@ class LoginScreen extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00247D), // ✅ blue background
+                      backgroundColor: const Color(0xFF0062C8), // ✅ blue background
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(26),

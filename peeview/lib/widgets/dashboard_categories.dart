@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/scan/scan_screen.dart';  // ✅ Import ScanScreen
 import '../screens/manualentry/manual_entry_screen.dart';
+import 'package:peeview/screens/upload/upload_screen.dart';
 
 class DashboardCategories extends StatelessWidget {
   const DashboardCategories({super.key});
@@ -19,9 +20,9 @@ class DashboardCategories extends StatelessWidget {
             MaterialPageRoute(builder: (context) => const ManualEntryScreen()),
           );
         } else if (title == "Upload") {
-          // TODO: Add navigation for Upload screen later
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Upload tapped")),
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const UploadScreen()),
           );
         }
       },

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:table_calendar/table_calendar.dart';
-import '../customize_appbar_screen.dart';
+import '/widgets/customize_appbar_screen.dart';
 import '/widgets/customize_navbar.dart';
 import '../appointment/appointment_result.dart';
 
@@ -26,8 +26,7 @@ class CalendarAppointmentScreen extends StatefulWidget {
       _CalendarAppointmentScreenState();
 }
 
-class _CalendarAppointmentScreenState
-    extends State<CalendarAppointmentScreen> {
+class _CalendarAppointmentScreenState extends State<CalendarAppointmentScreen> {
   int _selectedIndex = 0;
   DateTime _selectedDay = DateTime.now();
   String? _selectedTime;
@@ -52,15 +51,17 @@ class _CalendarAppointmentScreenState
 
   Future<void> _bookAppointment() async {
     if (_selectedTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a time")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please select a time")));
       return;
     }
 
     try {
       // Combine selected day and time
-      final timeParts = _selectedTime!.split(RegExp(r'[: ]')); // ["09","00","AM"]
+      final timeParts = _selectedTime!.split(
+        RegExp(r'[: ]'),
+      ); // ["09","00","AM"]
       int hour = int.parse(timeParts[0]);
       final minute = int.parse(timeParts[1]);
       if (timeParts[2] == "PM" && hour != 12) hour += 12;
@@ -102,12 +103,11 @@ class _CalendarAppointmentScreenState
         ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error booking: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error booking: $e")));
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +134,8 @@ class _CalendarAppointmentScreenState
             // Doctor Card
             Card(
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               elevation: 3,
               child: ListTile(
                 leading: ClipRRect(
@@ -146,10 +147,13 @@ class _CalendarAppointmentScreenState
                     fit: BoxFit.cover,
                   ),
                 ),
-                title: Text(widget.doctorName,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                title: Text(
+                  widget.doctorName,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 subtitle: Text(
-                    "${widget.doctorSpecialty}\n${widget.doctorClinic}"),
+                  "${widget.doctorSpecialty}\n${widget.doctorClinic}",
+                ),
               ),
             ),
 
@@ -191,8 +195,10 @@ class _CalendarAppointmentScreenState
                 headerStyle: const HeaderStyle(
                   formatButtonVisible: false,
                   titleCentered: true,
-                  titleTextStyle:
-                  TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  titleTextStyle: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
@@ -209,8 +215,7 @@ class _CalendarAppointmentScreenState
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate:
-              const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
@@ -235,12 +240,12 @@ class _CalendarAppointmentScreenState
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: isSelected
                           ? [
-                        BoxShadow(
-                          color: Colors.blue.withOpacity(0.3),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ]
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.3),
+                                blurRadius: 6,
+                                offset: const Offset(0, 3),
+                              ),
+                            ]
                           : [],
                     ),
                     child: Text(
@@ -267,7 +272,8 @@ class _CalendarAppointmentScreenState
                   backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 child: const Text(
                   "Book Appointment",

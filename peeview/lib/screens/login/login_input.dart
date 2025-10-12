@@ -87,7 +87,7 @@ class _LoginInputState extends State<LoginInput> {
               const SizedBox(height: 20),
               Center(
                 child: Image.asset(
-                  "lib/assets/images/peeview_logo.png",
+                  "lib/assets/images/app_logo.png",
                   height: 120,
                 ),
               ),
@@ -168,7 +168,7 @@ class _LoginInputState extends State<LoginInput> {
               ElevatedButton(
                 onPressed: _isLoading ? null : _login,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00247D),
+                  backgroundColor: const Color(0xFF0062C8),
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(26),

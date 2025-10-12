@@ -14,7 +14,7 @@ class _GuideStartState extends State<GuideStart> {
 
   final List<Map<String, String>> _pages = [
     {
-      "image": "lib/assets/images/hometesting.png",
+      "image": "lib/assets/images/easyhometest.png",
       "text":
       "Get instant urine analysis results from the comfort of your home with just your smartphone."
     },

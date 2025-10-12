@@ -30,7 +30,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Color(0xFF00247D), // ✅ Navy Blue (#00247D)
+      backgroundColor: Color(0xFF0062C8), // ✅ Navy Blue (#00247D)
       body: Center(
         child: Text(
           'peeView',

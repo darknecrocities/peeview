@@ -5,7 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:peeview/widgets/customize_navbar.dart';
-import '../customize_appbar_screen.dart'; // Updated import
+import '../customize_appbar_screen.dart';
+import 'upload_result_screen.dart';
 
 class UploadScreen extends StatefulWidget {
   const UploadScreen({super.key});
@@ -27,13 +28,9 @@ class _UploadScreenState extends State<UploadScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomizeAppBarScreen(
-        onNotificationsTap: () {
-          debugPrint("Notifications tapped");
-        },
-        onProfileTap: () {
-          debugPrint("Profile tapped");
-        },
-      ), // Using custom app bar
+        onNotificationsTap: () => debugPrint("Notifications tapped"),
+        onProfileTap: () => debugPrint("Profile tapped"),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
@@ -41,19 +38,12 @@ class _UploadScreenState extends State<UploadScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 12),
-
-              // Subtitle
               const Text(
                 "Upload your lab report as an image or PDF for instant analysis.",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 30),
-
-              // Checklist
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
@@ -65,8 +55,6 @@ class _UploadScreenState extends State<UploadScreen> {
                 ],
               ),
               const SizedBox(height: 30),
-
-              // Requirements
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -91,8 +79,6 @@ class _UploadScreenState extends State<UploadScreen> {
                 ),
               ),
               const SizedBox(height: 30),
-
-              // Drag & Drop Upload Area
               Expanded(
                 child: GestureDetector(
                   onTap: _pickFile,
@@ -102,7 +88,6 @@ class _UploadScreenState extends State<UploadScreen> {
                       border: Border.all(
                         color: const Color(0xFF0066E6),
                         width: 2,
-                        style: BorderStyle.solid,
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -128,7 +113,9 @@ class _UploadScreenState extends State<UploadScreen> {
                         ],
                       )
                           : Text(
-                        "Selected: ${_selectedFile!.path.split('/').last}",
+                        "Selected: ${_selectedFile?.path
+                            .split('/')
+                            .last ?? 'Unknown'}",
                         style: const TextStyle(
                           color: Colors.black,
                           fontSize: 16,
@@ -139,13 +126,11 @@ class _UploadScreenState extends State<UploadScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // Upload Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed:
-                  _uploading || _selectedFile == null ? null : _uploadFile,
+                  (_uploading || _selectedFile == null) ? null : _uploadFile,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0066E6),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -154,9 +139,7 @@ class _UploadScreenState extends State<UploadScreen> {
                     ),
                   ),
                   child: _uploading
-                      ? const CircularProgressIndicator(
-                    color: Colors.white,
-                  )
+                      ? const CircularProgressIndicator(color: Colors.white)
                       : const Text(
                     "Upload",
                     style: TextStyle(
@@ -170,10 +153,7 @@ class _UploadScreenState extends State<UploadScreen> {
               const SizedBox(height: 12),
               const Text(
                 "By uploading, you agree to use this feature responsibly to keep peeView safe and helpful for everyone.",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -197,10 +177,18 @@ class _UploadScreenState extends State<UploadScreen> {
       type: FileType.custom,
       allowedExtensions: ['jpg', 'png', 'pdf'],
     );
-    if (result != null && result.files.single.path != null) {
-      setState(() {
-        _selectedFile = File(result.files.single.path!);
-      });
+
+    if (result != null && result.files.isNotEmpty) {
+      final path = result.files.single.path;
+      if (path != null) {
+        setState(() {
+          _selectedFile = File(path);
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Selected file path is null.")),
+        );
+      }
     }
   }
 
@@ -209,19 +197,36 @@ class _UploadScreenState extends State<UploadScreen> {
 
     setState(() => _uploading = true);
 
+    // Capture local reference
+    final fileToUpload = _selectedFile;
+
     try {
       final currentUser = _auth.currentUser;
-      if (currentUser == null) return;
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("You must be logged in to upload.")),
+        );
+        return;
+      }
 
+      // Save file reference in Firestore
       await _firestore.collection("uploaded_reports").add({
         "userId": currentUser.uid,
-        "fileName": _selectedFile!.path.split('/').last,
+        "fileName": fileToUpload?.path
+            .split('/')
+            .last ?? 'unknown',
         "uploadedAt": FieldValue.serverTimestamp(),
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("File uploaded successfully!")),
-      );
+      // Navigate safely
+      if (fileToUpload != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => UploadResultScreen(file: fileToUpload),
+          ),
+        );
+      }
 
       setState(() => _selectedFile = null);
     } catch (e) {
@@ -234,7 +239,7 @@ class _UploadScreenState extends State<UploadScreen> {
   }
 }
 
-class _CheckItem extends StatelessWidget {
+  class _CheckItem extends StatelessWidget {
   final String text;
   const _CheckItem({required this.text});
 

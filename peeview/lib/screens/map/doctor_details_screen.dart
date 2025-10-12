@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../customize_appbar_screen.dart';
+import '/widgets/customize_appbar_screen.dart';
 import '/widgets/customize_navbar.dart';
 import 'calendar_appointment.dart';
 
@@ -83,10 +83,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
             const SizedBox(height: 4),
             Text(
               widget.specialty,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
             Text(
               widget.clinic,
@@ -120,7 +117,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
 
             Text(
               "${widget.name} is an experienced endocrinologist with a focus on diabetes management and urinalysis interpretation. "
-                  "Known for precise diagnostic skills and commitment to patient education.",
+              "Known for precise diagnostic skills and commitment to patient education.",
               style: const TextStyle(fontSize: 15, color: Colors.grey),
               textAlign: TextAlign.justify,
             ),

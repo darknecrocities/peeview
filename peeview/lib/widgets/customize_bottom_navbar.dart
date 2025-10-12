@@ -14,23 +14,6 @@ class CustomizeNavBar extends StatelessWidget {
     required this.onTap,
   });
 
-  // Helper to push with fade animation
-  void _navigateWithFade(BuildContext context, Widget screen) {
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => screen,
-        transitionDuration: const Duration(milliseconds: 300),
-        transitionsBuilder: (_, animation, __, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -44,24 +27,36 @@ class CustomizeNavBar extends StatelessWidget {
           unselectedItemColor: Colors.grey,
           currentIndex: currentIndex,
           onTap: (index) {
-            switch (index) {
-              case 0:
-                _navigateWithFade(context, const DashboardScreen());
-                break;
-              case 1:
-                _navigateWithFade(context, const AppointmentScreen());
-                break;
-              case 3:
-                _navigateWithFade(context, const MessageScreen());
-                break;
-              case 4:
-                _navigateWithFade(context, const ProfileScreen());
-                break;
-              case 2:
-              // Center logo, do nothing
-                break;
-              default:
-                onTap(index);
+            if (index == 0) {
+              // Dashboard
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const DashboardScreen(),
+                ),
+              );
+            } else if (index == 1) {
+              // Appointments
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AppointmentScreen(),
+                ),
+              );
+            } else if (index == 3) {
+              // Appointments
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const MessageScreen()),
+              );
+            } else if (index == 4) {
+              // Profile
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
+            } else {
+              onTap(index);
             }
           },
           showSelectedLabels: false,
@@ -75,10 +70,8 @@ class CustomizeNavBar extends StatelessWidget {
               icon: Icon(Icons.calendar_today, size: 26),
               label: "",
             ),
-            BottomNavigationBarItem(
-              icon: SizedBox.shrink(),
-              label: "",
-            ),
+            BottomNavigationBarItem(icon: SizedBox.shrink(), label: ""),
+            // Space for logo
             BottomNavigationBarItem(
               icon: Icon(Icons.chat, size: 28),
               label: "",
@@ -89,19 +82,14 @@ class CustomizeNavBar extends StatelessWidget {
             ),
           ],
         ),
-
-        // Floating PeeView Logo
         Positioned(
           top: -30,
-          child: GestureDetector(
-            onTap: () {
-              debugPrint("PeeView logo tapped!");
-            },
-            child: Image.asset(
-              "lib/assets/images/peeviewrevise.png",
-              fit: BoxFit.cover,
-              height: 74,
-              width: 74,
+          child: CircleAvatar(
+            radius: 32,
+            backgroundColor: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(6.0),
+              child: Image.asset("lib/assets/images/peeviewrevise.png", height: 74),
             ),
           ),
         ),

@@ -7,7 +7,6 @@ import 'contact_location_screen.dart';
 import '../../../widgets/text_field_input.dart';
 import '../../../widgets/role_selector.dart';
 
-
 class ClinicInfoScreen extends StatefulWidget {
   const ClinicInfoScreen({super.key});
 
@@ -19,7 +18,8 @@ class _ClinicInfoScreenState extends State<ClinicInfoScreen> {
   final TextEditingController _clinicNameController = TextEditingController();
   final TextEditingController _licenseController = TextEditingController();
   final TextEditingController _clinicTypeController = TextEditingController();
-  final TextEditingController _contactPersonController = TextEditingController();
+  final TextEditingController _contactPersonController =
+      TextEditingController();
   final TextEditingController _clinicEmailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
 
@@ -59,9 +59,9 @@ class _ClinicInfoScreenState extends State<ClinicInfoScreen> {
     try {
       final User? user = _auth.currentUser;
       if (user == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("User not logged in ❌")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("User not logged in ❌")));
         setState(() => _isLoading = false);
         return;
       }
@@ -76,27 +76,22 @@ class _ClinicInfoScreenState extends State<ClinicInfoScreen> {
         "createdAt": FieldValue.serverTimestamp(),
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Clinic info saved ✅")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Clinic info saved ✅")));
 
-      // Navigate to ContactLocationScreen
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => const ContactLocationScreen(),
-        ),
+        MaterialPageRoute(builder: (context) => const ContactLocationScreen()),
       );
-
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error saving clinic info: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error saving clinic info: $e")));
     } finally {
       setState(() => _isLoading = false);
     }
   }
-
 
   Widget _buildPhoneField() {
     return Container(
@@ -111,10 +106,13 @@ class _ClinicInfoScreenState extends State<ClinicInfoScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              border: Border(right: BorderSide(color: Colors.grey.shade400, width: 1)),
+              border: Border(
+                right: BorderSide(color: Colors.grey.shade400, width: 1),
+              ),
             ),
             child: CountryCodePicker(
-              onChanged: (code) => setState(() => _countryCode = code.dialCode!),
+              onChanged: (code) =>
+                  setState(() => _countryCode = code.dialCode!),
               initialSelection: "PH",
               favorite: const ["+63", "PH"],
               showFlag: true,
@@ -132,7 +130,10 @@ class _ClinicInfoScreenState extends State<ClinicInfoScreen> {
               decoration: const InputDecoration(
                 hintText: "Phone Number",
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                contentPadding: EdgeInsets.symmetric(
+                  vertical: 14,
+                  horizontal: 12,
+                ),
               ),
             ),
           ),
@@ -163,8 +164,6 @@ class _ClinicInfoScreenState extends State<ClinicInfoScreen> {
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -180,22 +179,46 @@ class _ClinicInfoScreenState extends State<ClinicInfoScreen> {
                   const SizedBox(height: 10),
                   const Text(
                     "Clinic Information",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF00247D)),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF00247D),
+                    ),
+                  ),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "I am:",
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
                   ),
                   const SizedBox(height: 14),
-
                   _buildRoleSelector(),
                   const SizedBox(height: 14),
-
-                  TextFieldInput(controller: _clinicNameController, hint: "Clinic Name"),
+                  TextFieldInput(
+                    controller: _clinicNameController,
+                    hint: "Clinic Name",
+                  ),
                   const SizedBox(height: 10),
-                  TextFieldInput(controller: _licenseController, hint: "License / Accreditation Number"),
+                  TextFieldInput(
+                    controller: _licenseController,
+                    hint: "License / Accreditation Number",
+                  ),
                   const SizedBox(height: 10),
-                  TextFieldInput(controller: _clinicTypeController, hint: "Clinic Type"),
+                  TextFieldInput(
+                    controller: _clinicTypeController,
+                    hint: "Clinic Type",
+                  ),
                   const SizedBox(height: 10),
-                  TextFieldInput(controller: _contactPersonController, hint: "Primary Contact Person"),
+                  TextFieldInput(
+                    controller: _contactPersonController,
+                    hint: "Primary Contact Person",
+                  ),
                   const SizedBox(height: 10),
-                  TextFieldInput(controller: _clinicEmailController, hint: "Clinic Email Address"),
+                  TextFieldInput(
+                    controller: _clinicEmailController,
+                    hint: "Clinic Email Address",
+                  ),
                   const SizedBox(height: 10),
                   _buildPhoneField(),
                   const SizedBox(height: 16),
@@ -203,43 +226,74 @@ class _ClinicInfoScreenState extends State<ClinicInfoScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : _continue,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00247D),
+                      backgroundColor: const Color(0XFF0062C8),
                       minimumSize: const Size(double.infinity, 46),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Continue", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white)),
+                        : const Text(
+                            "Continue",
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
-
                   const SizedBox(height: 8),
                   const Align(
                     alignment: Alignment.center,
-                    child: Text("Step 1 of 4", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    child: Text(
+                      "Step 1 of 4",
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
                   ),
                   const SizedBox(height: 16),
-
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text("By continuing, you agree to our", style: TextStyle(fontSize: 14, color: Colors.black)),
+                      const Text(
+                        "By continuing, you agree to our",
+                        style: TextStyle(fontSize: 14, color: Colors.black),
+                      ),
                       const SizedBox(height: 4),
                       RichText(
                         textAlign: TextAlign.center,
                         text: TextSpan(
                           text: "",
-                          style: const TextStyle(fontSize: 14, color: Colors.black),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
+                          ),
                           children: [
                             TextSpan(
                               text: "Terms of Service",
-                              style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
-                              recognizer: TapGestureRecognizer()..onTap = () { print("Terms clicked"); },
+                              style: const TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  print("Terms clicked");
+                                },
                             ),
-                            const TextSpan(text: " and ", style: TextStyle(color: Colors.black)),
+                            const TextSpan(
+                              text: " and ",
+                              style: TextStyle(color: Colors.black),
+                            ),
                             TextSpan(
                               text: "Privacy Policy",
-                              style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
-                              recognizer: TapGestureRecognizer()..onTap = () { print("Privacy clicked"); },
+                              style: const TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  print("Privacy clicked");
+                                },
                             ),
                           ],
                         ),
@@ -259,8 +313,15 @@ class _ClinicInfoScreenState extends State<ClinicInfoScreen> {
                 onTap: () => Navigator.pop(context),
                 child: Container(
                   padding: const EdgeInsets.all(6),
-                  decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
-                  child: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.grey,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: 22,
+                  ),
                 ),
               ),
             ),

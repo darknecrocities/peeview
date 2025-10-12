@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:peeview/screens/manualentry/urobilinogen_screen.dart'; // ✅ import next screen
+import 'package:peeview/screens/manualentry/urobilinogen_screen.dart';
+import 'package:peeview/widgets/customize_manual_buttons.dart';
+import 'package:peeview/widgets/customize_nav_auth.dart';
 
 class NitritesScreen extends StatefulWidget {
   final String sessionId; // session ID to save data under the same test
@@ -14,10 +16,7 @@ class NitritesScreen extends StatefulWidget {
 class _NitritesScreenState extends State<NitritesScreen> {
   String? selectedNitrite;
 
-  final List<String> nitriteLevels = [
-    "Negative",
-    "Positive",
-  ];
+  final List<String> nitriteLevels = ["Negative", "Positive"];
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -35,11 +34,6 @@ class _NitritesScreenState extends State<NitritesScreen> {
       "nitrites_level_timestamp": FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Nitrites Level saved ✅")),
-    );
-
-    // ✅ Navigate to UrobilinogenScreen
     if (mounted) {
       Navigator.push(
         context,
@@ -63,14 +57,14 @@ class _NitritesScreenState extends State<NitritesScreen> {
           child: Container(
             width: double.infinity,
             margin: const EdgeInsets.symmetric(vertical: 6),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(vertical: 14),
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF00247D) : Colors.white,
+              color: isSelected ? const Color(0XFF0062C8) : Colors.white,
               border: Border.all(
-                color: isSelected ? const Color(0xFF00247D) : Colors.grey,
+                color: isSelected ? const Color(0XFF063365) : Colors.grey,
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(24),
             ),
             child: Text(
               level,
@@ -89,113 +83,62 @@ class _NitritesScreenState extends State<NitritesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: CustomizeNavAuth(
+        showBackButton: true,
+        showSkipButton: false,
+        showTitle: false,
+      ),
       body: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.all(18.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 40),
-                  const Text(
-                    "Nitrites",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Bacterial infection indicator:",
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Nitrites selection tiles
-                  _buildNitriteTiles(),
-
-                  const SizedBox(height: 416),
-
-                  // Buttons row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context); // Skip
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey,
-                            minimumSize: const Size(double.infinity, 46),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                          ),
-                          child: const Text(
-                            "Skip",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Nitrates",
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontFamily: 'DM Sans',
+                        fontWeight: FontWeight.bold,
+                        color: Color(0XFF063365),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _saveNitritesLevel, // ✅ Save & go next
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF00247D),
-                            minimumSize: const Size(double.infinity, 46),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                          ),
-                          child: const Text(
-                            "Next",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-                  const Align(
-                    alignment: Alignment.center,
-                    child: Text("Step 10 of 15",
-                        style: TextStyle(fontSize: 12, color: Colors.grey)),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            ),
-
-            // Back button
-            Positioned(
-              top: 12,
-              left: 12,
-              child: GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: const BoxDecoration(
-                      shape: BoxShape.circle, color: Colors.grey),
-                  child: const Icon(Icons.arrow_back,
-                      color: Colors.white, size: 22),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Bacterial infection:",
+                      style: TextStyle(fontSize: 16, color: Colors.black),
+                    ),
+                    SizedBox(height: 30),
+                    _buildNitriteTiles(),
+                    SizedBox(height: 30),
+                  ],
                 ),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CustomizeManualButtons(
+                    onNext: _saveNitritesLevel,
+                    nextScreen: UrobilinogenScreen(sessionId: widget.sessionId),
+                  ),
+                  SizedBox(height: 10),
+                  const Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      "Step 10 of 15",
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
           ],
         ),
       ),

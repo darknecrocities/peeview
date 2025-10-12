@@ -4,7 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/customize_navbar.dart';
 import 'customize_appbar_screen.dart';
 import 'feedback/support_feedback_screen.dart';
-// ✅ Import your screen
+import 'package:flutter/services.dart';
+import 'package:peeview/screens/login/login_screen.dart'; // ✅ Import LoginScreen
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,7 +15,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  int _currentIndex = 4; // Profile tab is active
+  int _currentIndex = 4;
   String? userName;
   String? userGender;
 
@@ -22,6 +23,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _fetchUserData();
+
+    // Hide Android navbar & status bar
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  }
+
+  @override
+  void dispose() {
+    // Restore UI
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    super.dispose();
   }
 
   Future<void> _fetchUserData() async {
@@ -43,7 +54,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _onNavTap(int index) {
     setState(() => _currentIndex = index);
-    // navigation logic (handled in CustomizeNavBar)
+  }
+
+  /// ✅ Sign-out method that logs the user out and redirects to LoginScreen
+  Future<void> _signOut() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Sign Out"),
+        content: const Text("Are you sure you want to log out?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Log Out"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await FirebaseAuth.instance.signOut();
+      if (!mounted) return;
+
+      // Navigate to LoginScreen and clear previous routes
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+            (Route<dynamic> route) => false,
+      );
+    }
   }
 
   @override
@@ -135,10 +178,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const SupportFeedbackScreen()),
+                            builder: (context) => const SupportFeedbackScreen(),
+                          ),
                         );
                       }),
-                  _buildMenuItem(Icons.logout, "Sign Out"),
+                  _buildMenuItem(Icons.logout, "Sign Out", onTap: _signOut), // ✅ Linked to _signOut
                 ],
               ),
             ),

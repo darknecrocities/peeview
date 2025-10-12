@@ -226,9 +226,15 @@ class _AppointmentScreenState extends State<AppointmentScreen>
                     debugPrint("Reschedule tapped");
                   },
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue),
-                  child: const Text("Reschedule"),
-                ),
+                    // Keep the default background color
+                    backgroundColor: Colors.blue, // you can remove this line if you want the theme default
+                  ),
+                  child: const Text(
+                    "Reschedule",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                )
+
               ]
                   : status == "Completed"
                   ? [
@@ -239,13 +245,17 @@ class _AppointmentScreenState extends State<AppointmentScreen>
                   child: const Text("Book again"),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    debugPrint("Leave a Review tapped");
-                  },
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue),
-                  child: const Text("Leave a Review"),
-                ),
+                    backgroundColor: Colors.blue,
+                  ),
+                  onPressed: () {
+                    // Add your button action here
+                  },
+                  child: const Text(
+                    "Leave a Review",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                )
               ]
                   : [],
             );

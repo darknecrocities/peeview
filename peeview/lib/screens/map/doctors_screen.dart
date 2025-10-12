@@ -1,6 +1,5 @@
-// doctor_screen.dart
 import 'package:flutter/material.dart';
-import '../customize_appbar_screen.dart';
+import '/widgets/customize_appbar_screen.dart';
 import '/widgets/customize_navbar.dart';
 import 'doctor_details_screen.dart';
 
@@ -19,37 +18,37 @@ class _DoctorScreenState extends State<DoctorScreen> {
       "name": "Dr. Antonio Dela Cruz, MD",
       "specialty": "General Practitioner / Urinalysis & Preventive Care",
       "clinic": "HealthPlus Clinic – Quezon City",
-      "image": "https://randomuser.me/api/portraits/men/32.jpg"
+      "image": "https://randomuser.me/api/portraits/men/32.jpg",
     },
     {
       "name": "Dr. Lara Bautista, MD",
       "specialty": "Women’s Health / OB-GYN",
       "clinic": "HealthPlus Clinic – Quezon City",
-      "image": "https://randomuser.me/api/portraits/women/44.jpg"
+      "image": "https://randomuser.me/api/portraits/women/44.jpg",
     },
     {
       "name": "Dr. Rafael Moreno, MD",
       "specialty": "Endocrinology / Diabetes & Kidney Disorders",
       "clinic": "HealthPlus Clinic – Quezon City",
-      "image": "https://randomuser.me/api/portraits/men/46.jpg"
+      "image": "https://randomuser.me/api/portraits/men/46.jpg",
     },
     {
       "name": "Dr. Isabelle Ramos, MD",
       "specialty": "Family Medicine / Preventive Care",
       "clinic": "HealthPlus Clinic – Quezon City",
-      "image": "https://randomuser.me/api/portraits/women/52.jpg"
+      "image": "https://randomuser.me/api/portraits/women/52.jpg",
     },
     {
       "name": "Dr. Miguel Alvarez, MD",
       "specialty": "Urology / Urinary Tract & Kidney Health",
       "clinic": "HealthPlus Clinic – Quezon City",
-      "image": "https://randomuser.me/api/portraits/men/60.jpg"
+      "image": "https://randomuser.me/api/portraits/men/60.jpg",
     },
     {
       "name": "Dr. Grace Lim, MD",
       "specialty": "Internal Medicine / Nephrology",
       "clinic": "HealthPlus Clinic – Quezon City",
-      "image": "https://randomuser.me/api/portraits/women/68.jpg"
+      "image": "https://randomuser.me/api/portraits/women/68.jpg",
     },
   ];
 
@@ -125,16 +124,11 @@ class _DoctorScreenState extends State<DoctorScreen> {
                         children: [
                           Text(
                             doctor["specialty"]!,
-                            style: const TextStyle(
-                              color: Colors.grey, // ✅ specialty in grey
-                            ),
+                            style: const TextStyle(color: Colors.grey),
                           ),
                           Text(
                             doctor["clinic"]!,
-                            style: const TextStyle(
-                              color: Colors.grey, // ✅ clinic in grey
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: const TextStyle(color: Colors.grey),
                           ),
                         ],
                       ),

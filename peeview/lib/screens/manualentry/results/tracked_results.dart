@@ -1,45 +1,80 @@
 import 'package:flutter/material.dart';
 
 class TrackedResultsCard extends StatelessWidget {
-  final Map<String,
-      dynamic> values; // expects keys: wbc, bacteria, transparency, protein
+  final Map<String, dynamic>
+  values; // expects keys: wbc, bacteria, transparency, protein
 
-  const TrackedResultsCard({
-    super.key,
-    required this.values,
-  });
+  const TrackedResultsCard({super.key, required this.values});
 
-  int _parseResult(String? value, String type) {
+  int _parseResult(dynamic value, String key) {
     if (value == null) return 0;
-    value = value.trim();
+    String val = value.toString().toLowerCase();
 
-    switch (type) {
-    /// ----------------------------
-    /// Microscopy counts
-    /// ----------------------------
-      case 'wbc': // White Blood Cells
-      case 'rbc': // Red Blood Cells
+    // Numeric parsing
+    final numeric = RegExp(r'\d+(\.\d+)?').firstMatch(val);
+    if (numeric != null) {
+      return double.tryParse(numeric.group(0)!)?.round() ?? 0;
+    }
+
+    switch (key) {
+      /// ----------------------------
+      /// Microscopy counts
+      /// ----------------------------
+      case 'wbc':
+        if (value.contains("0-5/hpf")) return 2;
+        if (value.contains("6-10/hpf")) return 4;
+        if (value.contains("11-25/hpf")) return 6;
+        if (value.contains("26-50/hpf")) return 8;
+        if (value.contains(">50/hpf")) return 10;
+        return 0;// White Blood Cells
+      case 'rbc':
+        if (value.contains("0-2/hpf")) return 2;
+        if (value.contains("3-5/hpf")) return 4;
+        if (value.contains("6-10/hpf")) return 6;
+        if (value.contains("11-25/hpf")) return 8;
+        if (value.contains(">25/hpf")) return 10;
+        return 0;
+          // Red Blood Cells
       case 'bacteria':
-        if (value.contains(">50")) return 10;
-        if (value.contains("26-50")) return 8;
-        if (value.contains("11-25")) return 6;
-        if (value.contains("6-10")) return 4;
-        if (value.contains("3-5")) return 2;
+        if (value.contains(">50/hpf")) return 10;
+        if (value.contains("26-50/hpf")) return 8;
+        if (value.contains("Many")) return 6;
+        if (value.contains("Moderate")) return 4;
+        if (value.contains("Few")) return 2;
         return 0;
 
-    /// ----------------------------
-    /// Protein, Glucose, Bilirubin, Blood
-    /// ----------------------------
+      /// ----------------------------
+      /// Protein, Glucose, Bilirubin, Blood
+      /// ----------------------------
       case 'protein':
+        if (value.contains("Negative")) return 0;
+        if (value.contains("Trace")) return 2;
+        if (value.contains("+1")) return 4;
+        if (value.contains("+2")) return 6;
+        if (value.contains("+3")) return 8;
+        if (value.contains("+4")) return 10;
+        return 0;
       case 'glucose':
+        if (value.contains("Negative")) return 0;
+        if (value.contains("Trace")) return 2;
+        if (value.contains("+1")) return 4;
+        if (value.contains("+2")) return 6;
+        if (value.contains("+3")) return 8;
+        if (value.contains("+4")) return 10;
+        return 0;
       case 'bilirubin':
+        if (value.contains("+1")) return 2;
+        if (value.contains("+2")) return 4;
+        if (value.contains("+3")) return 6;
+        if (value.contains("+4")) return 10;
+        return 0;
       case 'blood':
-      // e.g. "+1", "+2", "+3", "+4"
+        // e.g. "+1", "+2", "+3", "+4"
         return int.tryParse(value.replaceAll("+", "")) ?? 0;
 
-    /// ----------------------------
-    /// Ketones & Leukocytes
-    /// ----------------------------
+      /// ----------------------------
+      /// Ketones & Leukocytes
+      /// ----------------------------
       case 'ketones':
       case 'leukocytes':
         if (value.toLowerCase() == "trace") return 1;
@@ -48,15 +83,17 @@ class TrackedResultsCard extends StatelessWidget {
         if (value == "+3" || value.toLowerCase() == "large") return 4;
         return 0;
 
-    /// ----------------------------
-    /// Nitrites
-    /// ----------------------------
+      /// ----------------------------
+      /// Nitrites
+      /// ----------------------------
       case 'nitrites':
-        return value.toLowerCase() == "positive" ? 1 : 0;
+        if (value.contains("Negative")) return 0;
+        if (value.contains("Positive")) return 10;
+        return 0;
 
-    /// ----------------------------
-    /// Transparency
-    /// ----------------------------
+      /// ----------------------------
+      /// Transparency
+      /// ----------------------------
       case 'transparency':
         switch (value.toLowerCase()) {
           case "clear":
@@ -72,33 +109,33 @@ class TrackedResultsCard extends StatelessWidget {
         }
         return 0;
 
-    /// ----------------------------
-    /// Urine Color
-    /// ----------------------------
+      /// ----------------------------
+      /// Urine Color
+      /// ----------------------------
       case 'color':
-        switch (value.toLowerCase()) {
-          case "pale yellow":
+        switch (value) {
+          case "Pale Yellow":
             return 0;
-          case "yellow":
+          case "Yellow":
             return 2;
-          case "dark yellow":
+          case "Dark Yellow":
             return 4;
-          case "amber":
+          case "Amber":
             return 6;
-          case "orange":
+          case "Orange":
             return 7;
-          case "red":
+          case "Red":
             return 8;
-          case "brown":
+          case "Brown":
             return 9;
-          case "colorless":
+          case "Colorless":
             return 10;
         }
         return 0;
 
-    /// ----------------------------
-    /// Specific Gravity
-    /// ----------------------------
+      /// ----------------------------
+      /// Specific Gravity
+      /// ----------------------------
       case 'specific_gravity':
         switch (value) {
           case "1.000":
@@ -118,9 +155,9 @@ class TrackedResultsCard extends StatelessWidget {
         }
         return 0;
 
-    /// ----------------------------
-    /// pH Level
-    /// ----------------------------
+      /// ----------------------------
+      /// pH Level
+      /// ----------------------------
       case 'ph_level':
         switch (value) {
           case "5.0":
@@ -142,26 +179,26 @@ class TrackedResultsCard extends StatelessWidget {
         }
         return 0;
 
-    /// ----------------------------
-    /// Urobilinogen
-    /// ----------------------------
+      /// ----------------------------
+      /// Urobilinogen
+      /// ----------------------------
       case 'urobilinogen':
         if (value.contains("12+")) return 10;
-        if (value.contains("8")) return 8;
+        if (value.contains("8 mg/dL")) return 8;
         if (value.contains("4")) return 6;
         if (value.contains("2")) return 4;
         if (value.toLowerCase().contains("normal") ||
-            value.toLowerCase().contains("trace")) return 0;
+            value.toLowerCase().contains("trace"))
+          return 2;
         return 0;
 
-    /// ----------------------------
-    /// Default fallback
-    /// ----------------------------
+      /// ----------------------------
+      /// Default fallback
+      /// ----------------------------
       default:
         return int.tryParse(value) ?? 0;
     }
   }
-
 
   /// Helper to safely convert any Firestore value to int
   int _safeToInt(dynamic value, {int defaultValue = 0}) {
@@ -212,7 +249,9 @@ class TrackedResultsCard extends StatelessWidget {
               if (badge.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 6),
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFB71C1C),
                     borderRadius: BorderRadius.circular(8),
@@ -228,67 +267,72 @@ class TrackedResultsCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Text(description,
-              style: const TextStyle(color: Colors.black54, fontSize: 12)),
+          Text(
+            description,
+            style: const TextStyle(color: Colors.black54, fontSize: 12),
+          ),
           const SizedBox(height: 12),
 
           // Gradient bar with segments
-          LayoutBuilder(builder: (context, constraints) {
-            final width = constraints.maxWidth;
-            final segments = colors.length;
-            return Stack(
-              alignment: Alignment.centerLeft,
-              children: [
-                Row(
-                  children: List.generate(segments, (i) {
-                    return Expanded(
-                      child: Container(
-                        height: 18,
-                        decoration: BoxDecoration(
-                          color: colors[i],
-                          borderRadius: BorderRadius.horizontal(
-                            left: i == 0 ? const Radius.circular(8) : Radius
-                                .zero,
-                            right: i == segments - 1
-                                ? const Radius.circular(8)
-                                : Radius.zero,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              final segments = colors.length;
+              return Stack(
+                alignment: Alignment.centerLeft,
+                children: [
+                  Row(
+                    children: List.generate(segments, (i) {
+                      return Expanded(
+                        child: Container(
+                          height: 18,
+                          decoration: BoxDecoration(
+                            color: colors[i],
+                            borderRadius: BorderRadius.horizontal(
+                              left: i == 0
+                                  ? const Radius.circular(8)
+                                  : Radius.zero,
+                              right: i == segments - 1
+                                  ? const Radius.circular(8)
+                                  : Radius.zero,
+                            ),
                           ),
                         ),
+                      );
+                    }),
+                  ),
+                  // marker
+                  Positioned(
+                    left: (width - 36) * markerPosition,
+                    // compensate for marker width
+                    child: Container(
+                      width: 36,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFB71C1C),
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.shade400,
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
-                    );
-                  }),
-                ),
-                // marker
-                Positioned(
-                  left: (width - 36) * markerPosition,
-                  // compensate for marker width
-                  child: Container(
-                    width: 36,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFB71C1C),
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.shade400,
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
+                      alignment: Alignment.center,
+                      child: Text(
+                        value.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      value.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                )
-              ],
-            );
-          }),
+                ],
+              );
+            },
+          ),
         ],
       ),
     );
@@ -296,6 +340,8 @@ class TrackedResultsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('Firestore Values: $values');
+
     // Parse all values
     int wbc = _parseResult(values['wbc_level'], 'wbc');
     int rbc = _parseResult(values['rbc_level'], 'rbc');
@@ -303,15 +349,16 @@ class TrackedResultsCard extends StatelessWidget {
     int transparency = _parseResult(values['transparency'], 'transparency');
     int protein = _parseResult(values['protein_level'], 'protein');
     int glucose = _parseResult(values['glucose_level'], 'glucose');
-    int bilirubin = _parseResult(values['bilirubin'], 'bilirubin');
+    int bilirubin = _parseResult(values['bilirubin_level'], 'bilirubin');
     int blood = _parseResult(values['blood_level'], 'blood');
-    int leukocytes = _parseResult(values['leukocytes'], 'leukocytes');
-    int nitrites = _parseResult(values['nitrites'], 'nitrites');
-    int urobilinogen = _parseResult(values['urobilinogen'], 'urobilinogen');
-    int ketones = _parseResult(values['ketones'], 'ketones');
+    int leukocytes = _parseResult(values['leukocytes_level'], 'leukocytes');
+    int nitrites = _parseResult(values['nitrites_level'], 'nitrites');
+    int urobilinogen = _parseResult(values['urobilinogen_level'], 'urobilinogen');
+    int ketones = _parseResult(values['ketones_level'], 'ketones');
     int color = _parseResult(values['color'], 'color');
     int sg = _parseResult(values['specific_gravity'], 'specific_gravity');
     int ph = _parseResult(values['ph_level'], 'ph_level');
+
 
     // Normalize positions (clamped to 0-1)
     double wbcPos = (wbc / 10).clamp(0.0, 1.0);
@@ -348,7 +395,7 @@ class TrackedResultsCard extends StatelessWidget {
             colors: const [
               Color(0xFF2E7D32),
               Color(0xFFF57C00),
-              Color(0xFFB71C1C)
+              Color(0xFFB71C1C),
             ],
             markerPosition: colorPos,
             description: "Unusual color may indicate hydration or pathology.",
@@ -363,10 +410,11 @@ class TrackedResultsCard extends StatelessWidget {
             colors: const [
               Color(0xFF2E7D32),
               Color(0xFFF57C00),
-              Color(0xFFB71C1C)
+              Color(0xFFB71C1C),
             ],
             markerPosition: transparencyPos,
-            description: "Hazy/Turbid urine may suggest dehydration or infection.",
+            description:
+                "Hazy/Turbid urine may suggest dehydration or infection.",
             badge: values['transparency'] ?? '',
           ),
 
@@ -378,7 +426,7 @@ class TrackedResultsCard extends StatelessWidget {
             colors: const [
               Color(0xFF2E7D32),
               Color(0xFFF57C00),
-              Color(0xFFB71C1C)
+              Color(0xFFB71C1C),
             ],
             markerPosition: sgPos,
             description: "Shows urine concentration (hydration status).",
@@ -393,10 +441,11 @@ class TrackedResultsCard extends StatelessWidget {
             colors: const [
               Color(0xFF2E7D32),
               Color(0xFFF57C00),
-              Color(0xFFB71C1C)
+              Color(0xFFB71C1C),
             ],
             markerPosition: phPos,
-            description: "Acidic/alkaline urine may indicate metabolic conditions.",
+            description:
+                "Acidic/alkaline urine may indicate metabolic conditions.",
             badge: values['ph_level'] ?? '',
           ),
 
@@ -408,7 +457,7 @@ class TrackedResultsCard extends StatelessWidget {
             colors: const [
               Color(0xFF2E7D32),
               Color(0xFFF57C00),
-              Color(0xFFB71C1C)
+              Color(0xFFB71C1C),
             ],
             markerPosition: proteinPos,
             description: "Proteinuria can indicate kidney involvement.",
@@ -423,7 +472,7 @@ class TrackedResultsCard extends StatelessWidget {
             colors: const [
               Color(0xFF2E7D32),
               Color(0xFFF57C00),
-              Color(0xFFB71C1C)
+              Color(0xFFB71C1C),
             ],
             markerPosition: glucosePos,
             description: "High glucose may indicate diabetes.",
@@ -438,7 +487,7 @@ class TrackedResultsCard extends StatelessWidget {
             colors: const [
               Color(0xFF2E7D32),
               Color(0xFFF57C00),
-              Color(0xFFB71C1C)
+              Color(0xFFB71C1C),
             ],
             markerPosition: bilirubinPos,
             description: "Bilirubin presence may suggest liver disease.",
@@ -453,10 +502,11 @@ class TrackedResultsCard extends StatelessWidget {
             colors: const [
               Color(0xFF2E7D32),
               Color(0xFFF57C00),
-              Color(0xFFB71C1C)
+              Color(0xFFB71C1C),
             ],
             markerPosition: bloodPos,
-            description: "Blood in urine may suggest kidney or urinary tract issues.",
+            description:
+                "Blood in urine may suggest kidney or urinary tract issues.",
             badge: values['blood_level'] ?? '',
           ),
 
@@ -468,7 +518,7 @@ class TrackedResultsCard extends StatelessWidget {
             colors: const [
               Color(0xFF2E7D32),
               Color(0xFFF57C00),
-              Color(0xFFB71C1C)
+              Color(0xFFB71C1C),
             ],
             markerPosition: leukocytesPos,
             description: "Indicates white blood cells, may mean infection.",
@@ -483,7 +533,7 @@ class TrackedResultsCard extends StatelessWidget {
             colors: const [
               Color(0xFF2E7D32),
               Color(0xFFF57C00),
-              Color(0xFFB71C1C)
+              Color(0xFFB71C1C),
             ],
             markerPosition: nitritesPos,
             description: "Positive nitrites may suggest bacterial UTI.",
@@ -498,7 +548,7 @@ class TrackedResultsCard extends StatelessWidget {
             colors: const [
               Color(0xFF2E7D32),
               Color(0xFFF57C00),
-              Color(0xFFB71C1C)
+              Color(0xFFB71C1C),
             ],
             markerPosition: urobilinogenPos,
             description: "High levels may suggest liver dysfunction.",
@@ -513,7 +563,7 @@ class TrackedResultsCard extends StatelessWidget {
             colors: const [
               Color(0xFF2E7D32),
               Color(0xFFF57C00),
-              Color(0xFFB71C1C)
+              Color(0xFFB71C1C),
             ],
             markerPosition: ketonesPos,
             description: "High ketones may indicate diabetes or starvation.",
@@ -528,7 +578,7 @@ class TrackedResultsCard extends StatelessWidget {
             colors: const [
               Color(0xFF2E7D32),
               Color(0xFFF57C00),
-              Color(0xFFB71C1C)
+              Color(0xFFB71C1C),
             ],
             markerPosition: rbcPos,
             description: "RBC in urine may indicate bleeding or kidney issues.",
@@ -543,7 +593,7 @@ class TrackedResultsCard extends StatelessWidget {
             colors: const [
               Color(0xFF2E7D32),
               Color(0xFFF57C00),
-              Color(0xFFB71C1C)
+              Color(0xFFB71C1C),
             ],
             markerPosition: wbcPos,
             description: "Elevated WBC count may suggest infection.",
@@ -558,7 +608,7 @@ class TrackedResultsCard extends StatelessWidget {
             colors: const [
               Color(0xFF2E7D32),
               Color(0xFFF57C00),
-              Color(0xFFB71C1C)
+              Color(0xFFB71C1C),
             ],
             markerPosition: bacteriaPos,
             description: "High bacteria count may indicate infection.",

@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '/widgets/customize_navbar.dart';
 import 'package:peeview/screens/customize_appbar_screen.dart';
+import 'package:peeview/screens/dashboard_screen.dart';
+import 'package:peeview/screens/appointment/appointment_screen.dart';
+import 'package:peeview/screens/profile_screen.dart';
+import 'package:flutter/services.dart';
+
 
 class MessageScreen extends StatefulWidget {
   const MessageScreen({super.key});
@@ -40,8 +45,26 @@ class _MessageScreenState extends State<MessageScreen>
   @override
   void initState() {
     super.initState();
+
+    // 🔹 Initialize TabController
     _tabController = TabController(length: 3, vsync: this);
+
+    // 🔹 Hide Android navbar & status bar
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.immersiveSticky,
+      overlays: [],
+    );
   }
+
+  @override
+  void dispose() {
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.edgeToEdge,
+      overlays: SystemUiOverlay.values,
+    );
+    super.dispose();
+  }
+
 
   void _onNavTap(int index) {
     setState(() => _currentIndex = index);
@@ -120,8 +143,40 @@ class _MessageScreenState extends State<MessageScreen>
         onPressed: () => debugPrint("New message tapped"),
       ),
       bottomNavigationBar: CustomizeNavBar(
-        currentIndex: _currentIndex,
-        onTap: _onNavTap,
+        currentIndex: 3, // ✅ Chat tab is active
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (_, __, ___) => const DashboardScreen(),
+                transitionDuration: const Duration(milliseconds: 300),
+                transitionsBuilder: (_, animation, __, child) =>
+                    FadeTransition(opacity: animation, child: child),
+              ),
+            );
+          } else if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (_, __, ___) => const AppointmentScreen(),
+                transitionDuration: const Duration(milliseconds: 300),
+                transitionsBuilder: (_, animation, __, child) =>
+                    FadeTransition(opacity: animation, child: child),
+              ),
+            );
+          } else if (index == 4) {
+            Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (_, __, ___) => const ProfileScreen(),
+                transitionDuration: const Duration(milliseconds: 300),
+                transitionsBuilder: (_, animation, __, child) =>
+                    FadeTransition(opacity: animation, child: child),
+              ),
+            );
+          }
+        },
       ),
     );
   }

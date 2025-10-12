@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:peeview/widgets/customize_nav_auth.dart';
+import 'package:peeview/widgets/customize_next_button.dart';
+import 'package:peeview/widgets/customize_progress_indicator.dart';
 import '../../loading/welcome_screen.dart';
 
 class BloodScreen extends StatefulWidget {
@@ -15,42 +18,21 @@ class _BloodScreenState extends State<BloodScreen> {
   String _selectedRh = '+'; // + or -
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final int _totalSteps = 5;
-  final int _currentStep = 4;
 
   Future<void> _saveBloodAndNext() async {
-    if (_selectedBloodType == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a blood type.")),
-      );
-      return;
-    }
-
     try {
       final uid = _auth.currentUser!.uid;
-      await _firestore.collection("users").doc(uid).set(
-        {
-          "bloodType": _selectedBloodType,
-          "rhFactor": _selectedRh,
-        },
-        SetOptions(merge: true),
-      );
+      await _firestore.collection("users").doc(uid).set({
+        "bloodType": _selectedBloodType,
+        "rhFactor": _selectedRh,
+      }, SetOptions(merge: true));
       print("Blood Type saved: $_selectedBloodType $_selectedRh");
-
-      // Navigate to WelcomeScreen
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const WelcomeScreen()),
       );
     } catch (e) {
       print("Error saving blood type: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text(
-                "Failed to save blood type. Proceeding anyway...")),
-      );
-
-      // Navigate to WelcomeScreen even if save fails
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const WelcomeScreen()),
@@ -58,86 +40,35 @@ class _BloodScreenState extends State<BloodScreen> {
     }
   }
 
-  Widget _buildProgressIndicator() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(_totalSteps, (index) {
-        bool active = index < _currentStep;
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: active ? Colors.blue : Colors.grey.shade300,
-          ),
-        );
-      }),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: CustomizeNavAuth(
+        showBackButton: true,
+        showSkipButton: true,
+        nextScreen: WelcomeScreen(),
+        showTitle: false,
+      ),
       body: SafeArea(
         child: Stack(
           children: [
             Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 18.0, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 18.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Top row: Back and Skip
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.grey,
-                          ),
-                          child: const Icon(
-                            Icons.arrow_back,
-                            color: Colors.white,
-                            size: 22,
-                          ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          print("Skipped");
-                        },
-                        child: const Text(
-                          "SKIP",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 40),
-
-                  // Question
+                  const SizedBox(height: 58),
                   const Text(
                     "What’s your Blood Type?",
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 40),
-
-                  // Blood type toggle in rounded rectangle
                   Center(
                     child: Container(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.blue, width: 2),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: Color(0XFF0062C8), width: 2),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -151,17 +82,21 @@ class _BloodScreenState extends State<BloodScreen> {
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 24, vertical: 12),
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
                               decoration: BoxDecoration(
-                                color:
-                                selected ? Colors.blue : Colors.transparent,
-                                borderRadius: BorderRadius.circular(18),
+                                color: selected
+                                    ? Color(0XFF0062C8)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(22),
                               ),
                               child: Text(
                                 type,
                                 style: TextStyle(
-                                  color:
-                                  selected ? Colors.white : Colors.blue,
+                                  color: selected
+                                      ? Colors.white
+                                      : Color(0XFF0062C8),
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -173,24 +108,20 @@ class _BloodScreenState extends State<BloodScreen> {
                     ),
                   ),
                   const SizedBox(height: 40),
-
-                  // Big blood type indicator
+                  // Blood Type Indicator
                   Center(
                     child: Text(
                       _selectedBloodType != null
                           ? _selectedBloodType! + _selectedRh
-                          : "-",
+                          : "",
                       style: const TextStyle(
                         fontSize: 140,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue,
+                        color: Color(0XFF0062C8),
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
-                  // RH toggle
                   Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -201,7 +132,9 @@ class _BloodScreenState extends State<BloodScreen> {
                           iconSize: 48,
                           icon: Icon(
                             Icons.add_circle,
-                            color: _selectedRh == '+' ? Colors.blue : Colors.grey.shade400,
+                            color: _selectedRh == '+'
+                                ? Color(0XFF0062C8)
+                                : Color(0xFFe6e6e6),
                           ),
                           onPressed: () {
                             setState(() {
@@ -209,22 +142,25 @@ class _BloodScreenState extends State<BloodScreen> {
                             });
                           },
                         ),
-
-                        // "or" text
                         const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 12),
                           child: Text(
                             "or",
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey),
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey,
+                            ),
                           ),
                         ),
-
                         // Minus button
                         IconButton(
                           iconSize: 48,
                           icon: Icon(
                             Icons.remove_circle,
-                            color: _selectedRh == '-' ? Colors.blue : Colors.grey.shade400,
+                            color: _selectedRh == '-'
+                                ? Color(0XFF0062C8)
+                                : Color(0xFFe6e6e6),
                           ),
                           onPressed: () {
                             setState(() {
@@ -235,33 +171,20 @@ class _BloodScreenState extends State<BloodScreen> {
                       ],
                     ),
                   ),
+                  const Spacer(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CustomProgressIndicator(currentStep: 4),
+                      CustomizeNextButton(
+                        onPressed: () async {
+                          _saveBloodAndNext();
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 35),
                 ],
-              ),
-            ),
-
-            // Bottom left: Progress indicators
-            Positioned(
-              bottom: 20,
-              left: 18,
-              child: _buildProgressIndicator(),
-            ),
-
-            // Bottom right: Next button
-            Positioned(
-              bottom: 20,
-              right: 18,
-              child: ElevatedButton(
-                onPressed: _saveBloodAndNext,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(16),
-                ),
-                child: const Icon(
-                  Icons.arrow_forward,
-                  color: Colors.white,
-                  size: 24,
-                ),
               ),
             ),
           ],
