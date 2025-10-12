@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../screens/dashboard_screen.dart';
-import '../screens/profile_screen.dart';
-import '../screens/appointment/appointment_screen.dart';
-import '../screens/chat/message_screen.dart';
+import '../../screens/dashboard_screen.dart';
+import '../../screens/profile/profile_screen.dart';
+import '../../screens/appointment/appointment_screen.dart';
+import '../../screens/chat/message_screen.dart';
 
 class CustomizeNavBar extends StatelessWidget {
   final int currentIndex;

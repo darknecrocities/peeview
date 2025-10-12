@@ -1,65 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:peeview/widgets/customize_nav_auth.dart';
-import 'transparency_screen.dart';
-import 'package:peeview/widgets/customize_manual_buttons.dart';
+import 'package:peeview/screens/manualentry/test/urobilinogen_screen.dart';
+import 'package:peeview/widgets/buttons/customize_manual_buttons.dart';
+import 'package:peeview/widgets/navbar/customize_nav_auth.dart';
 
-class UrineColorScreen extends StatefulWidget {
-  final String sessionId;
-  const UrineColorScreen({super.key, required this.sessionId});
+class NitritesScreen extends StatefulWidget {
+  final String sessionId; // session ID to save data under the same test
+
+  const NitritesScreen({super.key, required this.sessionId});
 
   @override
-  State<UrineColorScreen> createState() => _UrineColorScreenState();
+  State<NitritesScreen> createState() => _NitritesScreenState();
 }
 
-class _UrineColorScreenState extends State<UrineColorScreen> {
-  String? selectedColor;
+class _NitritesScreenState extends State<NitritesScreen> {
+  String? selectedNitrite;
 
-  final List<String> colors = [
-    "Pale Yellow",
-    "Yellow",
-    "Dark Yellow",
-    "Amber",
-    "Orange",
-    "Red",
-    "Brown",
-    "Colorless",
-  ];
+  final List<String> nitriteLevels = ["Negative", "Positive"];
 
-  Future<void> _saveColorAndNext() async {
-    if (selectedColor == null) {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<void> _saveNitritesLevel() async {
+    if (selectedNitrite == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Select a color to continue, or press Skip"),
-        ),
+        const SnackBar(content: Text("Please select a nitrite level")),
       );
       return;
     }
 
-    await FirebaseFirestore.instance
-        .collection("urine_tests")
-        .doc(widget.sessionId)
-        .update({
-          "color": selectedColor,
-          "color_timestamp": FieldValue.serverTimestamp(),
-        });
+    // Save to Firestore in the same urine_tests session
+    await _firestore.collection("urine_tests").doc(widget.sessionId).set({
+      "nitrites_level": selectedNitrite,
+      "nitrites_level_timestamp": FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TransparencyScreen(sessionId: widget.sessionId),
-      ),
-    );
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => UrobilinogenScreen(sessionId: widget.sessionId),
+        ),
+      );
+    }
   }
 
-  Widget _buildColorTiles() {
+  Widget _buildNitriteTiles() {
     return Column(
-      children: colors.map((color) {
-        final isSelected = selectedColor == color;
+      children: nitriteLevels.map((level) {
+        final isSelected = selectedNitrite == level;
         return GestureDetector(
           onTap: () {
             setState(() {
-              selectedColor = color;
+              selectedNitrite = level;
             });
           },
           child: Container(
@@ -75,7 +67,7 @@ class _UrineColorScreenState extends State<UrineColorScreen> {
               borderRadius: BorderRadius.circular(24),
             ),
             child: Text(
-              color,
+              level,
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.black,
                 fontSize: 14,
@@ -90,12 +82,12 @@ class _UrineColorScreenState extends State<UrineColorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: CustomizeNavAuth(
         showBackButton: true,
         showSkipButton: false,
         showTitle: false,
       ),
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -106,7 +98,7 @@ class _UrineColorScreenState extends State<UrineColorScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Urine Color",
+                      "Nitrates",
                       style: TextStyle(
                         fontSize: 28,
                         fontFamily: 'DM Sans',
@@ -116,11 +108,11 @@ class _UrineColorScreenState extends State<UrineColorScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "What color is the urine sample?",
+                      "Bacterial infection:",
                       style: TextStyle(fontSize: 16, color: Colors.black),
                     ),
                     SizedBox(height: 30),
-                    _buildColorTiles(),
+                    _buildNitriteTiles(),
                     SizedBox(height: 30),
                   ],
                 ),
@@ -132,15 +124,14 @@ class _UrineColorScreenState extends State<UrineColorScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CustomizeManualButtons(
-                    onNext: _saveColorAndNext,
-                    nextScreen: TransparencyScreen(sessionId: widget.sessionId),
+                    onNext: _saveNitritesLevel,
+                    nextScreen: UrobilinogenScreen(sessionId: widget.sessionId),
                   ),
-
                   SizedBox(height: 10),
                   const Align(
                     alignment: Alignment.center,
                     child: Text(
-                      "Step 1 of 15",
+                      "Step 10 of 15",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ),

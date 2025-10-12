@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '/widgets/customize_appbar_screen.dart';
-import '/widgets/customize_navbar.dart';
+import '../../widgets/appbar/customize_appbar_screen.dart';
+import '../../widgets/navbar/customize_navbar.dart';
 import 'doctor_details_screen.dart';
 
 class DoctorScreen extends StatefulWidget {

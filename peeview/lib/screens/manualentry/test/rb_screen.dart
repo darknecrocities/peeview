@@ -1,62 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:peeview/screens/manualentry/ketones_screen.dart';
-import 'package:peeview/widgets/customize_manual_buttons.dart';
-import 'package:peeview/widgets/customize_nav_auth.dart';
+import 'package:peeview/screens/manualentry/test/wb_screen.dart';
+import 'package:peeview/widgets/buttons/customize_manual_buttons.dart';
+import 'package:peeview/widgets/navbar/customize_nav_auth.dart';
 
-class UrobilinogenScreen extends StatefulWidget {
+class RedBloodCellsScreen extends StatefulWidget {
   final String sessionId;
 
-  const UrobilinogenScreen({super.key, required this.sessionId});
+  const RedBloodCellsScreen({super.key, required this.sessionId});
 
   @override
-  State<UrobilinogenScreen> createState() => _UrobilinogenScreenState();
+  State<RedBloodCellsScreen> createState() => _RedBloodCellsScreenState();
 }
 
-class _UrobilinogenScreenState extends State<UrobilinogenScreen> {
-  String? selectedUrobilinogen;
+class _RedBloodCellsScreenState extends State<RedBloodCellsScreen> {
+  String? selectedRBC;
 
-  final List<String> urobilinogenLevels = [
-    "Normal",
-    "2 mg/dL",
-    "4 mg/dL",
-    "8 mg/dL",
-    "12+ mg/dL",
+  final List<String> rbcLevels = [
+    "0-2/hpf",
+    "3-5/hpf",
+    "6-10/hpf",
+    "11-25/hpf",
+    ">25/hpf",
   ];
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> _saveUrobilinogenLevel() async {
-    if (selectedUrobilinogen == null) {
+  Future<void> _saveRBCLevel() async {
+    if (selectedRBC == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a Urobilinogen level")),
+        const SnackBar(content: Text("Please select an RBC level")),
       );
       return;
     }
 
+    // ✅ Save to Firestore
     await _firestore.collection("urine_tests").doc(widget.sessionId).set({
-      "urobilinogen_level": selectedUrobilinogen,
-      "urobilinogen_level_timestamp": FieldValue.serverTimestamp(),
+      "rbc_level": selectedRBC,
+      "rbc_level_timestamp": FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
 
+    // ✅ Navigate to BloodScreen
     if (mounted) {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => KetonesScreen(sessionId: widget.sessionId),
+          builder: (context) =>
+              WhiteBloodCellsScreen(sessionId: widget.sessionId),
         ),
       );
     }
   }
 
-  Widget _buildUrobilinogenTiles() {
+  Widget _buildRBCTiles() {
     return Column(
-      children: urobilinogenLevels.map((level) {
-        final isSelected = selectedUrobilinogen == level;
+      children: rbcLevels.map((level) {
+        final isSelected = selectedRBC == level;
         return GestureDetector(
           onTap: () {
             setState(() {
-              selectedUrobilinogen = level;
+              selectedRBC = level;
             });
           },
           child: Container(
@@ -103,7 +106,7 @@ class _UrobilinogenScreenState extends State<UrobilinogenScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Urobilinogen",
+                      "Red Blood Cells",
                       style: TextStyle(
                         fontSize: 28,
                         fontFamily: 'DM Sans',
@@ -113,11 +116,11 @@ class _UrobilinogenScreenState extends State<UrobilinogenScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Liver function:",
+                      "Microscopic examination:",
                       style: TextStyle(fontSize: 16, color: Colors.black),
                     ),
                     SizedBox(height: 30),
-                    _buildUrobilinogenTiles(),
+                    _buildRBCTiles(),
                     SizedBox(height: 30),
                   ],
                 ),
@@ -129,14 +132,16 @@ class _UrobilinogenScreenState extends State<UrobilinogenScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CustomizeManualButtons(
-                    onNext: _saveUrobilinogenLevel,
-                    nextScreen: KetonesScreen(sessionId: widget.sessionId),
+                    onNext: _saveRBCLevel,
+                    nextScreen: WhiteBloodCellsScreen(
+                      sessionId: widget.sessionId,
+                    ),
                   ),
                   SizedBox(height: 10),
                   const Align(
                     alignment: Alignment.center,
                     child: Text(
-                      "Step 11 of 15",
+                      "Step 13 of 15",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'bilirubin_screen.dart';
-import 'package:peeview/widgets/customize_manual_buttons.dart';
-import 'package:peeview/widgets/customize_nav_auth.dart';
+import 'package:peeview/widgets/buttons/customize_manual_buttons.dart';
+import 'package:peeview/widgets/navbar/customize_nav_auth.dart';
 
 class GlucoseScreen extends StatefulWidget {
   final String sessionId; // session ID to save data under the same test

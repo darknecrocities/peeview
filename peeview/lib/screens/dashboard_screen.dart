@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import '../widgets/customize_bottom_navbar.dart';
-import '../widgets/dashboard_categories.dart';
-import '../widgets/customize_app_bar_dash.dart';
+import '../widgets/navbar/customize_bottom_navbar.dart';
+import '../widgets/cards/dashboard_categories.dart';
+import '../widgets/appbar/customize_app_bar_dash.dart';
 
 
 class DashboardScreen extends StatefulWidget {

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
-import '../../../widgets/text_field_input.dart';
-import '../../../widgets/role_selector.dart';
+import '../../../widgets/textfield/text_field_input.dart';
+import '../../../widgets/cards/role_selector.dart';
 import 'service_screen.dart';
 
 class ContactLocationScreen extends StatefulWidget {

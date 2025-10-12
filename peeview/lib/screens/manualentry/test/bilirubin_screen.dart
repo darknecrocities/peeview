@@ -1,62 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:peeview/screens/manualentry/completed_screen.dart';
-import 'package:peeview/widgets/customize_manual_buttons.dart';
-import 'package:peeview/widgets/customize_nav_auth.dart';
+import 'blood_screen.dart';
+import 'package:peeview/widgets/buttons/customize_manual_buttons.dart';
+import 'package:peeview/widgets/navbar/customize_nav_auth.dart';
 
-class BacteriaScreen extends StatefulWidget {
+class BilirubinScreen extends StatefulWidget {
   final String sessionId;
 
-  const BacteriaScreen({super.key, required this.sessionId});
+  const BilirubinScreen({super.key, required this.sessionId});
 
   @override
-  State<BacteriaScreen> createState() => _BacteriaScreenState();
+  State<BilirubinScreen> createState() => _BilirubinScreenState();
 }
 
-class _BacteriaScreenState extends State<BacteriaScreen> {
-  String? selectedBacteria;
+class _BilirubinScreenState extends State<BilirubinScreen> {
+  String? selectedBilirubin;
 
-  final List<String> bacteriaLevels = [
-    "Few",
-    "Moderate",
-    "Many",
-    "26-50/hpf",
-    ">50/hpf",
-  ];
+  final List<String> bilirubinLevels = ["Negative", "+1", "+2", "+3"];
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> _saveBacteriaLevel() async {
-    if (selectedBacteria == null) {
+  Future<void> _saveBilirubinLevel() async {
+    if (selectedBilirubin == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a bacteria level")),
+        const SnackBar(content: Text("Please select a bilirubin level")),
       );
       return;
     }
 
-    await _firestore.collection("urine_tests").doc(widget.sessionId).set({
-      "bacteria_level": selectedBacteria,
-      "bacteria_level_timestamp": FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    // Save to Firestore in the same urine_tests session
+    await _firestore.collection("urine_tests").doc(widget.sessionId).update({
+      "bilirubin_level": selectedBilirubin,
+      "bilirubin_level_timestamp": FieldValue.serverTimestamp(),
+    });
 
-    if (mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CompletedScreen(sessionId: widget.sessionId),
-        ),
-      );
-    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BloodScreen(sessionId: widget.sessionId),
+      ),
+    );
   }
 
-  Widget _buildBacteriaTiles() {
+  Widget _buildBilirubinTiles() {
     return Column(
-      children: bacteriaLevels.map((level) {
-        final isSelected = selectedBacteria == level;
+      children: bilirubinLevels.map((bilirubin) {
+        final isSelected = selectedBilirubin == bilirubin;
         return GestureDetector(
           onTap: () {
             setState(() {
-              selectedBacteria = level;
+              selectedBilirubin = bilirubin;
             });
           },
           child: Container(
@@ -72,7 +65,7 @@ class _BacteriaScreenState extends State<BacteriaScreen> {
               borderRadius: BorderRadius.circular(24),
             ),
             child: Text(
-              level,
+              bilirubin,
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.black,
                 fontSize: 14,
@@ -103,7 +96,7 @@ class _BacteriaScreenState extends State<BacteriaScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Bacteria",
+                      "Bilirubin",
                       style: TextStyle(
                         fontSize: 28,
                         fontFamily: 'DM Sans',
@@ -113,11 +106,11 @@ class _BacteriaScreenState extends State<BacteriaScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Bacterial presence:",
+                      "Liver function:",
                       style: TextStyle(fontSize: 16, color: Colors.black),
                     ),
                     SizedBox(height: 30),
-                    _buildBacteriaTiles(),
+                    _buildBilirubinTiles(),
                     SizedBox(height: 30),
                   ],
                 ),
@@ -129,14 +122,14 @@ class _BacteriaScreenState extends State<BacteriaScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CustomizeManualButtons(
-                    onNext: _saveBacteriaLevel,
-                    nextScreen: CompletedScreen(sessionId: widget.sessionId),
+                    onNext: _saveBilirubinLevel,
+                    nextScreen: BloodScreen(sessionId: widget.sessionId),
                   ),
                   SizedBox(height: 10),
                   const Align(
                     alignment: Alignment.center,
                     child: Text(
-                      "Step 15 of 15",
+                      "Step 8 of 15",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ),

@@ -1,62 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:peeview/screens/manualentry/bacteria_screen.dart';
-import 'package:peeview/widgets/customize_manual_buttons.dart';
-import 'package:peeview/widgets/customize_nav_auth.dart';
+import 'gravity_screen.dart';
+import 'package:peeview/widgets/buttons/customize_manual_buttons.dart';
+import 'package:peeview/widgets/navbar/customize_nav_auth.dart';
 
-class WhiteBloodCellsScreen extends StatefulWidget {
-  final String sessionId;
+class TransparencyScreen extends StatefulWidget {
+  final String sessionId; // Add sessionId
 
-  const WhiteBloodCellsScreen({super.key, required this.sessionId});
+  const TransparencyScreen({super.key, required this.sessionId});
 
   @override
-  State<WhiteBloodCellsScreen> createState() => _WhiteBloodCellsScreenState();
+  State<TransparencyScreen> createState() => _TransparencyScreenState();
 }
 
-class _WhiteBloodCellsScreenState extends State<WhiteBloodCellsScreen> {
-  String? selectedWBC;
+class _TransparencyScreenState extends State<TransparencyScreen> {
+  String? selectedTransparency;
 
-  final List<String> wbcLevels = [
-    "0-5/hpf",
-    "6-10/hpf",
-    "11-25/hpf",
-    "26-50/hpf",
-    ">50/hpf",
+  final List<String> transparencies = [
+    "Clear",
+    "Slightly Hazy",
+    "Hazy",
+    "Cloudy",
+    "Turbid",
   ];
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> _saveWBCLevel() async {
-    if (selectedWBC == null) {
+  Future<void> _saveTransparency() async {
+    if (selectedTransparency == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a WBC level")),
+        const SnackBar(content: Text("Please select a transparency level")),
       );
       return;
     }
 
-    await _firestore.collection("urine_tests").doc(widget.sessionId).set({
-      "wbc_level": selectedWBC,
-      "wbc_level_timestamp": FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    // Save to the same session document
+    await _firestore.collection("urine_tests").doc(widget.sessionId).update({
+      "transparency": selectedTransparency,
+      "transparency_timestamp": FieldValue.serverTimestamp(),
+    });
 
-    if (mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => BacteriaScreen(sessionId: widget.sessionId),
-        ),
-      );
-    }
+    // Navigate to GravityScreen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GravityScreen(sessionId: widget.sessionId),
+      ),
+    );
   }
 
-  Widget _buildWBCTiles() {
+  Widget _buildTransparencyTiles() {
     return Column(
-      children: wbcLevels.map((level) {
-        final isSelected = selectedWBC == level;
+      children: transparencies.map((transparency) {
+        final isSelected = selectedTransparency == transparency;
         return GestureDetector(
           onTap: () {
             setState(() {
-              selectedWBC = level;
+              selectedTransparency = transparency;
             });
           },
           child: Container(
@@ -72,7 +72,7 @@ class _WhiteBloodCellsScreenState extends State<WhiteBloodCellsScreen> {
               borderRadius: BorderRadius.circular(24),
             ),
             child: Text(
-              level,
+              transparency,
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.black,
                 fontSize: 14,
@@ -103,7 +103,7 @@ class _WhiteBloodCellsScreenState extends State<WhiteBloodCellsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "White Blood Cells",
+                      "Transparency",
                       style: TextStyle(
                         fontSize: 28,
                         fontFamily: 'DM Sans',
@@ -113,11 +113,11 @@ class _WhiteBloodCellsScreenState extends State<WhiteBloodCellsScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Microscopic count:",
+                      "How clear is the urine?",
                       style: TextStyle(fontSize: 16, color: Colors.black),
                     ),
                     SizedBox(height: 30),
-                    _buildWBCTiles(),
+                    _buildTransparencyTiles(),
                     SizedBox(height: 30),
                   ],
                 ),
@@ -129,14 +129,14 @@ class _WhiteBloodCellsScreenState extends State<WhiteBloodCellsScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CustomizeManualButtons(
-                    onNext: _saveWBCLevel,
-                    nextScreen: BacteriaScreen(sessionId: widget.sessionId),
+                    onNext: _saveTransparency,
+                    nextScreen: GravityScreen(sessionId: widget.sessionId),
                   ),
                   SizedBox(height: 10),
                   const Align(
                     alignment: Alignment.center,
                     child: Text(
-                      "Step 14 of 15",
+                      "Step 2 of 15",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ),

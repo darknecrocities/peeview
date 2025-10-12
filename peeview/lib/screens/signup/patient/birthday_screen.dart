@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:peeview/widgets/customize_nav_auth.dart';
-import 'package:peeview/widgets/customize_next_button.dart';
+import 'package:peeview/widgets/navbar/customize_nav_auth.dart';
+import 'package:peeview/widgets/buttons/customize_next_button.dart';
 import 'weight_screen.dart';
 
 class BirthdayScreen extends StatefulWidget {

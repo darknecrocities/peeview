@@ -1,63 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'glucose_screen.dart';
-import 'package:peeview/widgets/customize_manual_buttons.dart';
-import 'package:peeview/widgets/customize_nav_auth.dart';
+import 'leukocytes_screen.dart';
+import 'package:peeview/widgets/buttons/customize_manual_buttons.dart';
+import 'package:peeview/widgets/navbar/customize_nav_auth.dart';
 
-class ProteinScreen extends StatefulWidget {
+class BloodScreen extends StatefulWidget {
   final String sessionId; // session ID to save data under the same test
 
-  const ProteinScreen({super.key, required this.sessionId});
+  const BloodScreen({super.key, required this.sessionId});
 
   @override
-  State<ProteinScreen> createState() => _ProteinScreenState();
+  State<BloodScreen> createState() => _BloodScreenState();
 }
 
-class _ProteinScreenState extends State<ProteinScreen> {
-  String? selectedProtein;
+class _BloodScreenState extends State<BloodScreen> {
+  String? selectedBlood;
 
-  final List<String> proteinLevels = [
+  final List<String> bloodLevels = [
     "Negative",
     "Trace",
     "+1",
     "+2",
     "+3",
-    "+4",
+    "Large",
   ];
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> _saveProteinLevel() async {
-    if (selectedProtein == null) {
+  Future<void> _saveBloodLevel() async {
+    if (selectedBlood == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a protein level")),
+        const SnackBar(
+          content: Text("Please select a blood (erythrocytes) level"),
+        ),
       );
       return;
     }
 
-    // Save to Firestore in the same urine_tests session
     await _firestore.collection("urine_tests").doc(widget.sessionId).update({
-      "protein_level": selectedProtein,
-      "protein_level_timestamp": FieldValue.serverTimestamp(),
+      "blood_level": selectedBlood,
+      "blood_level_timestamp": FieldValue.serverTimestamp(),
     });
 
-    // Navigate to GlucoseScreen
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => GlucoseScreen(sessionId: widget.sessionId),
+        builder: (context) => LeukocytesScreen(sessionId: widget.sessionId),
       ),
     );
   }
 
-  Widget _buildProteinTiles() {
+  Widget _buildBloodTiles() {
     return Column(
-      children: proteinLevels.map((protein) {
-        final isSelected = selectedProtein == protein;
+      children: bloodLevels.map((blood) {
+        final isSelected = selectedBlood == blood;
         return GestureDetector(
           onTap: () {
             setState(() {
-              selectedProtein = protein;
+              selectedBlood = blood;
             });
           },
           child: Container(
@@ -73,7 +73,7 @@ class _ProteinScreenState extends State<ProteinScreen> {
               borderRadius: BorderRadius.circular(24),
             ),
             child: Text(
-              protein,
+              blood,
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.black,
                 fontSize: 14,
@@ -104,7 +104,7 @@ class _ProteinScreenState extends State<ProteinScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "pH Level",
+                      "Blood (Erythrocytes)",
                       style: TextStyle(
                         fontSize: 28,
                         fontFamily: 'DM Sans',
@@ -114,11 +114,11 @@ class _ProteinScreenState extends State<ProteinScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Acidity / alkalinity level:",
+                      "Red blood cells in urine:",
                       style: TextStyle(fontSize: 16, color: Colors.black),
                     ),
                     SizedBox(height: 30),
-                    _buildProteinTiles(),
+                    _buildBloodTiles(),
                     SizedBox(height: 30),
                   ],
                 ),
@@ -131,16 +131,15 @@ class _ProteinScreenState extends State<ProteinScreen> {
                 children: [
                   CustomizeManualButtons(
                     onNext: () {
-                      _saveProteinLevel();
+                      _saveBloodLevel();
                     },
-                    nextScreen: GlucoseScreen(sessionId: widget.sessionId),
+                    nextScreen: LeukocytesScreen(sessionId: widget.sessionId),
                   ),
-
                   SizedBox(height: 10),
                   const Align(
                     alignment: Alignment.center,
                     child: Text(
-                      "Step 5 of 15",
+                      "Step 8 of 15",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ),

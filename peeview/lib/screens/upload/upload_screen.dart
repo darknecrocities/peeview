@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:peeview/widgets/customize_navbar.dart';
-import '../customize_appbar_screen.dart';
+import 'package:peeview/widgets/navbar/customize_navbar.dart';
+import '../exclusive widgets/customize_appbar_screen.dart';
 import 'upload_result_screen.dart';
 
 class UploadScreen extends StatefulWidget {

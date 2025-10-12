@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../widgets/customize_navbar.dart';
-import '../customize_appbar_screen.dart';
+import '../../widgets/navbar/customize_navbar.dart';
+import '../exclusive widgets/customize_appbar_screen.dart';
 import 'faq_inquiry_screen.dart'; // ✅ FAQ screen
 import 'feedback_screen.dart';   // ✅ Feedback screen
 

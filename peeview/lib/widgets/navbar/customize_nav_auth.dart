@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:peeview/widgets/customize_back_button.dart';
-import 'package:peeview/widgets/customize_skip_button.dart';
+import 'package:peeview/widgets/buttons/customize_back_button.dart';
+import 'package:peeview/widgets/buttons/customize_skip_button.dart';
 
 class CustomizeNavAuth extends StatelessWidget implements PreferredSizeWidget {
   final String? title;

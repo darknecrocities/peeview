@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/gestures.dart';
-import '../../widgets/role_selector.dart';
-import '../../widgets/text_field_input.dart';
-import '../../widgets/phone_field.dart';
+import '../../widgets/cards/role_selector.dart';
+import '../../widgets/textfield/text_field_input.dart';
+import '../../widgets/textfield/phone_field.dart';
 import 'patient/gender_screen.dart';
 import 'clinic/clinic_info_screen.dart';
-import 'package:peeview/widgets/customize_nav_auth.dart';
+import 'package:peeview/widgets/navbar/customize_nav_auth.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});

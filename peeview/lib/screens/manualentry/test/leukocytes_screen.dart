@@ -1,55 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'blood_screen.dart';
-import 'package:peeview/widgets/customize_manual_buttons.dart';
-import 'package:peeview/widgets/customize_nav_auth.dart';
+import 'package:peeview/screens/manualentry/test/nitrites_screen.dart';
+import 'package:peeview/widgets/buttons/customize_manual_buttons.dart';
+import 'package:peeview/widgets/navbar/customize_nav_auth.dart';
 
-class BilirubinScreen extends StatefulWidget {
+class LeukocytesScreen extends StatefulWidget {
   final String sessionId;
 
-  const BilirubinScreen({super.key, required this.sessionId});
+  const LeukocytesScreen({super.key, required this.sessionId});
 
   @override
-  State<BilirubinScreen> createState() => _BilirubinScreenState();
+  State<LeukocytesScreen> createState() => _LeukocytesScreenState();
 }
 
-class _BilirubinScreenState extends State<BilirubinScreen> {
-  String? selectedBilirubin;
+class _LeukocytesScreenState extends State<LeukocytesScreen> {
+  String? selectedLeukocytes;
 
-  final List<String> bilirubinLevels = ["Negative", "+1", "+2", "+3"];
+  final List<String> leukocyteLevels = [
+    "Negative",
+    "Trace",
+    "+1",
+    "+2",
+    "+3",
+    "Large",
+  ];
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> _saveBilirubinLevel() async {
-    if (selectedBilirubin == null) {
+  Future<void> _saveLeukocytesLevel() async {
+    if (selectedLeukocytes == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a bilirubin level")),
+        const SnackBar(content: Text("Please select a leukocyte level")),
       );
       return;
     }
 
-    // Save to Firestore in the same urine_tests session
-    await _firestore.collection("urine_tests").doc(widget.sessionId).update({
-      "bilirubin_level": selectedBilirubin,
-      "bilirubin_level_timestamp": FieldValue.serverTimestamp(),
-    });
+    await _firestore.collection("urine_tests").doc(widget.sessionId).set({
+      "leukocytes_level": selectedLeukocytes,
+      "leukocytes_level_timestamp": FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BloodScreen(sessionId: widget.sessionId),
-      ),
-    );
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => NitritesScreen(sessionId: widget.sessionId),
+        ),
+      );
+    }
   }
 
-  Widget _buildBilirubinTiles() {
+  Widget _buildLeukocyteTiles() {
     return Column(
-      children: bilirubinLevels.map((bilirubin) {
-        final isSelected = selectedBilirubin == bilirubin;
+      children: leukocyteLevels.map((level) {
+        final isSelected = selectedLeukocytes == level;
         return GestureDetector(
           onTap: () {
             setState(() {
-              selectedBilirubin = bilirubin;
+              selectedLeukocytes = level;
             });
           },
           child: Container(
@@ -65,7 +73,7 @@ class _BilirubinScreenState extends State<BilirubinScreen> {
               borderRadius: BorderRadius.circular(24),
             ),
             child: Text(
-              bilirubin,
+              level,
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.black,
                 fontSize: 14,
@@ -96,7 +104,7 @@ class _BilirubinScreenState extends State<BilirubinScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Bilirubin",
+                      "Leukocytes",
                       style: TextStyle(
                         fontSize: 28,
                         fontFamily: 'DM Sans',
@@ -106,11 +114,11 @@ class _BilirubinScreenState extends State<BilirubinScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Liver function:",
+                      "White blood cells:",
                       style: TextStyle(fontSize: 16, color: Colors.black),
                     ),
                     SizedBox(height: 30),
-                    _buildBilirubinTiles(),
+                    _buildLeukocyteTiles(),
                     SizedBox(height: 30),
                   ],
                 ),
@@ -122,14 +130,14 @@ class _BilirubinScreenState extends State<BilirubinScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CustomizeManualButtons(
-                    onNext: _saveBilirubinLevel,
-                    nextScreen: BloodScreen(sessionId: widget.sessionId),
+                    onNext: _saveLeukocytesLevel,
+                    nextScreen: NitritesScreen(sessionId: widget.sessionId),
                   ),
                   SizedBox(height: 10),
                   const Align(
                     alignment: Alignment.center,
                     child: Text(
-                      "Step 8 of 15",
+                      "Step 9 of 15",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ),

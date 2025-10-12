@@ -1,62 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'gravity_screen.dart';
-import 'package:peeview/widgets/customize_manual_buttons.dart';
-import 'package:peeview/widgets/customize_nav_auth.dart';
+import 'glucose_screen.dart';
+import 'package:peeview/widgets/buttons/customize_manual_buttons.dart';
+import 'package:peeview/widgets/navbar/customize_nav_auth.dart';
 
-class TransparencyScreen extends StatefulWidget {
-  final String sessionId; // Add sessionId
+class ProteinScreen extends StatefulWidget {
+  final String sessionId; // session ID to save data under the same test
 
-  const TransparencyScreen({super.key, required this.sessionId});
+  const ProteinScreen({super.key, required this.sessionId});
 
   @override
-  State<TransparencyScreen> createState() => _TransparencyScreenState();
+  State<ProteinScreen> createState() => _ProteinScreenState();
 }
 
-class _TransparencyScreenState extends State<TransparencyScreen> {
-  String? selectedTransparency;
+class _ProteinScreenState extends State<ProteinScreen> {
+  String? selectedProtein;
 
-  final List<String> transparencies = [
-    "Clear",
-    "Slightly Hazy",
-    "Hazy",
-    "Cloudy",
-    "Turbid",
+  final List<String> proteinLevels = [
+    "Negative",
+    "Trace",
+    "+1",
+    "+2",
+    "+3",
+    "+4",
   ];
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> _saveTransparency() async {
-    if (selectedTransparency == null) {
+  Future<void> _saveProteinLevel() async {
+    if (selectedProtein == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a transparency level")),
+        const SnackBar(content: Text("Please select a protein level")),
       );
       return;
     }
 
-    // Save to the same session document
+    // Save to Firestore in the same urine_tests session
     await _firestore.collection("urine_tests").doc(widget.sessionId).update({
-      "transparency": selectedTransparency,
-      "transparency_timestamp": FieldValue.serverTimestamp(),
+      "protein_level": selectedProtein,
+      "protein_level_timestamp": FieldValue.serverTimestamp(),
     });
 
-    // Navigate to GravityScreen
+    // Navigate to GlucoseScreen
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => GravityScreen(sessionId: widget.sessionId),
+        builder: (context) => GlucoseScreen(sessionId: widget.sessionId),
       ),
     );
   }
 
-  Widget _buildTransparencyTiles() {
+  Widget _buildProteinTiles() {
     return Column(
-      children: transparencies.map((transparency) {
-        final isSelected = selectedTransparency == transparency;
+      children: proteinLevels.map((protein) {
+        final isSelected = selectedProtein == protein;
         return GestureDetector(
           onTap: () {
             setState(() {
-              selectedTransparency = transparency;
+              selectedProtein = protein;
             });
           },
           child: Container(
@@ -72,7 +73,7 @@ class _TransparencyScreenState extends State<TransparencyScreen> {
               borderRadius: BorderRadius.circular(24),
             ),
             child: Text(
-              transparency,
+              protein,
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.black,
                 fontSize: 14,
@@ -103,7 +104,7 @@ class _TransparencyScreenState extends State<TransparencyScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Transparency",
+                      "pH Level",
                       style: TextStyle(
                         fontSize: 28,
                         fontFamily: 'DM Sans',
@@ -113,11 +114,11 @@ class _TransparencyScreenState extends State<TransparencyScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "How clear is the urine?",
+                      "Acidity / alkalinity level:",
                       style: TextStyle(fontSize: 16, color: Colors.black),
                     ),
                     SizedBox(height: 30),
-                    _buildTransparencyTiles(),
+                    _buildProteinTiles(),
                     SizedBox(height: 30),
                   ],
                 ),
@@ -129,14 +130,17 @@ class _TransparencyScreenState extends State<TransparencyScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CustomizeManualButtons(
-                    onNext: _saveTransparency,
-                    nextScreen: GravityScreen(sessionId: widget.sessionId),
+                    onNext: () {
+                      _saveProteinLevel();
+                    },
+                    nextScreen: GlucoseScreen(sessionId: widget.sessionId),
                   ),
+
                   SizedBox(height: 10),
                   const Align(
                     alignment: Alignment.center,
                     child: Text(
-                      "Step 2 of 15",
+                      "Step 5 of 15",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ),

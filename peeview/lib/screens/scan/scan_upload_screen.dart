@@ -8,8 +8,8 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:image/image.dart' as img;
 import 'package:http/http.dart' as http;
 
-import '../../widgets/customize_navbar.dart';
-import '../customize_appbar_screen.dart';
+import '../../widgets/navbar/customize_navbar.dart';
+import '../exclusive widgets/customize_appbar_screen.dart';
 import 'scan_result.dart';
 
 class ScanUploadScreen extends StatefulWidget {

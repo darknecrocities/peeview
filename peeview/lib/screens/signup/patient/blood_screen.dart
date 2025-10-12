@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:peeview/widgets/customize_nav_auth.dart';
-import 'package:peeview/widgets/customize_next_button.dart';
-import 'package:peeview/widgets/customize_progress_indicator.dart';
+import 'package:peeview/widgets/navbar/customize_nav_auth.dart';
+import 'package:peeview/widgets/buttons/customize_next_button.dart';
+import 'package:peeview/widgets/cards/customize_progress_indicator.dart';
 import '../../loading/welcome_screen.dart';
 
 class BloodScreen extends StatefulWidget {

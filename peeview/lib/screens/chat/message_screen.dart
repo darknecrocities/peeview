@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '/widgets/customize_navbar.dart';
-import 'package:peeview/screens/customize_appbar_screen.dart';
+import '../../widgets/navbar/customize_navbar.dart';
+import 'package:peeview/screens/exclusive%20widgets/customize_appbar_screen.dart';
 import 'package:peeview/screens/dashboard_screen.dart';
 import 'package:peeview/screens/appointment/appointment_screen.dart';
-import 'package:peeview/screens/profile_screen.dart';
+import 'package:peeview/screens/profile/profile_screen.dart';
 import 'package:flutter/services.dart';
 
 

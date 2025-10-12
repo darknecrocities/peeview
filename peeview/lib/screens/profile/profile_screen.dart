@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../widgets/customize_navbar.dart';
-import 'customize_appbar_screen.dart';
-import 'feedback/support_feedback_screen.dart';
+import '../../widgets/navbar/customize_navbar.dart';
+import '../exclusive widgets/customize_appbar_screen.dart';
+import '../feedback/support_feedback_screen.dart';
 import 'package:flutter/services.dart';
 import 'package:peeview/screens/login/login_screen.dart'; // ✅ Import LoginScreen
 

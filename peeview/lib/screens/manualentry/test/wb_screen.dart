@@ -1,63 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'leukocytes_screen.dart';
-import 'package:peeview/widgets/customize_manual_buttons.dart';
-import 'package:peeview/widgets/customize_nav_auth.dart';
+import 'package:peeview/screens/manualentry/test/bacteria_screen.dart';
+import 'package:peeview/widgets/buttons/customize_manual_buttons.dart';
+import 'package:peeview/widgets/navbar/customize_nav_auth.dart';
 
-class BloodScreen extends StatefulWidget {
-  final String sessionId; // session ID to save data under the same test
+class WhiteBloodCellsScreen extends StatefulWidget {
+  final String sessionId;
 
-  const BloodScreen({super.key, required this.sessionId});
+  const WhiteBloodCellsScreen({super.key, required this.sessionId});
 
   @override
-  State<BloodScreen> createState() => _BloodScreenState();
+  State<WhiteBloodCellsScreen> createState() => _WhiteBloodCellsScreenState();
 }
 
-class _BloodScreenState extends State<BloodScreen> {
-  String? selectedBlood;
+class _WhiteBloodCellsScreenState extends State<WhiteBloodCellsScreen> {
+  String? selectedWBC;
 
-  final List<String> bloodLevels = [
-    "Negative",
-    "Trace",
-    "+1",
-    "+2",
-    "+3",
-    "Large",
+  final List<String> wbcLevels = [
+    "0-5/hpf",
+    "6-10/hpf",
+    "11-25/hpf",
+    "26-50/hpf",
+    ">50/hpf",
   ];
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> _saveBloodLevel() async {
-    if (selectedBlood == null) {
+  Future<void> _saveWBCLevel() async {
+    if (selectedWBC == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please select a blood (erythrocytes) level"),
-        ),
+        const SnackBar(content: Text("Please select a WBC level")),
       );
       return;
     }
 
-    await _firestore.collection("urine_tests").doc(widget.sessionId).update({
-      "blood_level": selectedBlood,
-      "blood_level_timestamp": FieldValue.serverTimestamp(),
-    });
+    await _firestore.collection("urine_tests").doc(widget.sessionId).set({
+      "wbc_level": selectedWBC,
+      "wbc_level_timestamp": FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => LeukocytesScreen(sessionId: widget.sessionId),
-      ),
-    );
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BacteriaScreen(sessionId: widget.sessionId),
+        ),
+      );
+    }
   }
 
-  Widget _buildBloodTiles() {
+  Widget _buildWBCTiles() {
     return Column(
-      children: bloodLevels.map((blood) {
-        final isSelected = selectedBlood == blood;
+      children: wbcLevels.map((level) {
+        final isSelected = selectedWBC == level;
         return GestureDetector(
           onTap: () {
             setState(() {
-              selectedBlood = blood;
+              selectedWBC = level;
             });
           },
           child: Container(
@@ -73,7 +72,7 @@ class _BloodScreenState extends State<BloodScreen> {
               borderRadius: BorderRadius.circular(24),
             ),
             child: Text(
-              blood,
+              level,
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.black,
                 fontSize: 14,
@@ -104,7 +103,7 @@ class _BloodScreenState extends State<BloodScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Blood (Erythrocytes)",
+                      "White Blood Cells",
                       style: TextStyle(
                         fontSize: 28,
                         fontFamily: 'DM Sans',
@@ -114,11 +113,11 @@ class _BloodScreenState extends State<BloodScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Red blood cells in urine:",
+                      "Microscopic count:",
                       style: TextStyle(fontSize: 16, color: Colors.black),
                     ),
                     SizedBox(height: 30),
-                    _buildBloodTiles(),
+                    _buildWBCTiles(),
                     SizedBox(height: 30),
                   ],
                 ),
@@ -130,16 +129,14 @@ class _BloodScreenState extends State<BloodScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CustomizeManualButtons(
-                    onNext: () {
-                      _saveBloodLevel();
-                    },
-                    nextScreen: LeukocytesScreen(sessionId: widget.sessionId),
+                    onNext: _saveWBCLevel,
+                    nextScreen: BacteriaScreen(sessionId: widget.sessionId),
                   ),
                   SizedBox(height: 10),
                   const Align(
                     alignment: Alignment.center,
                     child: Text(
-                      "Step 8 of 15",
+                      "Step 14 of 15",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ),

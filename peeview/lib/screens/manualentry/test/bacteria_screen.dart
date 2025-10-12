@@ -1,64 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:peeview/screens/manualentry/rb_screen.dart';
-import 'package:peeview/widgets/customize_manual_buttons.dart';
-import 'package:peeview/widgets/customize_nav_auth.dart';
+import 'package:peeview/screens/manualentry/completed_screen.dart';
+import 'package:peeview/widgets/buttons/customize_manual_buttons.dart';
+import 'package:peeview/widgets/navbar/customize_nav_auth.dart';
 
-class KetonesScreen extends StatefulWidget {
+class BacteriaScreen extends StatefulWidget {
   final String sessionId;
 
-  const KetonesScreen({super.key, required this.sessionId});
+  const BacteriaScreen({super.key, required this.sessionId});
 
   @override
-  State<KetonesScreen> createState() => _KetonesScreenState();
+  State<BacteriaScreen> createState() => _BacteriaScreenState();
 }
 
-class _KetonesScreenState extends State<KetonesScreen> {
-  String? selectedKetone;
+class _BacteriaScreenState extends State<BacteriaScreen> {
+  String? selectedBacteria;
 
-  final List<String> ketoneLevels = [
-    "Normal",
-    "Trace",
-    "Small",
+  final List<String> bacteriaLevels = [
+    "Few",
     "Moderate",
-    "Large",
+    "Many",
+    "26-50/hpf",
+    ">50/hpf",
   ];
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> _saveKetonesLevel() async {
-    if (selectedKetone == null) {
+  Future<void> _saveBacteriaLevel() async {
+    if (selectedBacteria == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a Ketone level")),
+        const SnackBar(content: Text("Please select a bacteria level")),
       );
       return;
     }
 
-    // ✅ Save to Firestore
     await _firestore.collection("urine_tests").doc(widget.sessionId).set({
-      "ketones_level": selectedKetone,
-      "ketones_level_timestamp": FieldValue.serverTimestamp(),
+      "bacteria_level": selectedBacteria,
+      "bacteria_level_timestamp": FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
 
     if (mounted) {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              RedBloodCellsScreen(sessionId: widget.sessionId),
+          builder: (context) => CompletedScreen(sessionId: widget.sessionId),
         ),
       );
     }
   }
 
-  Widget _buildKetonesTiles() {
+  Widget _buildBacteriaTiles() {
     return Column(
-      children: ketoneLevels.map((level) {
-        final isSelected = selectedKetone == level;
+      children: bacteriaLevels.map((level) {
+        final isSelected = selectedBacteria == level;
         return GestureDetector(
           onTap: () {
             setState(() {
-              selectedKetone = level;
+              selectedBacteria = level;
             });
           },
           child: Container(
@@ -105,7 +103,7 @@ class _KetonesScreenState extends State<KetonesScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Ketones",
+                      "Bacteria",
                       style: TextStyle(
                         fontSize: 28,
                         fontFamily: 'DM Sans',
@@ -115,11 +113,11 @@ class _KetonesScreenState extends State<KetonesScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Metabolic indicator:",
+                      "Bacterial presence:",
                       style: TextStyle(fontSize: 16, color: Colors.black),
                     ),
                     SizedBox(height: 30),
-                    _buildKetonesTiles(),
+                    _buildBacteriaTiles(),
                     SizedBox(height: 30),
                   ],
                 ),
@@ -131,16 +129,14 @@ class _KetonesScreenState extends State<KetonesScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CustomizeManualButtons(
-                    onNext: _saveKetonesLevel,
-                    nextScreen: RedBloodCellsScreen(
-                      sessionId: widget.sessionId,
-                    ),
+                    onNext: _saveBacteriaLevel,
+                    nextScreen: CompletedScreen(sessionId: widget.sessionId),
                   ),
                   SizedBox(height: 10),
                   const Align(
                     alignment: Alignment.center,
                     child: Text(
-                      "Step 12 of 15",
+                      "Step 15 of 15",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ),

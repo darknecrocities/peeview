@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:peeview/widgets/customize_bottom_navbar.dart';
-import 'urine_color_screen.dart';
-import 'package:peeview/widgets/customize_back_button.dart';
-import 'package:peeview/widgets/customize_app_bar_dash.dart';
+import 'package:peeview/widgets/navbar/customize_bottom_navbar.dart';
+import 'test/urine_color_screen.dart';
+import 'package:peeview/widgets/buttons/customize_back_button.dart';
+import 'package:peeview/widgets/appbar/customize_app_bar_dash.dart';
 
 class ManualEntryScreen extends StatefulWidget {
   const ManualEntryScreen({super.key});

@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:peeview/screens/dashboard_screen.dart';
-import 'package:peeview/widgets/customize_bottom_navbar.dart';
+import 'package:peeview/widgets/navbar/customize_bottom_navbar.dart';
 import 'prediction_card.dart';
 import 'tracked_results.dart';
 import 'package:http/http.dart' as http;

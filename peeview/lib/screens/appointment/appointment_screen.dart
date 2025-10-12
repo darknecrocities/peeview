@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:peeview/widgets/customize_navbar.dart';
-import 'package:peeview/screens/customize_appbar_screen.dart';
+import 'package:peeview/widgets/navbar/customize_navbar.dart';
+import 'package:peeview/screens/exclusive%20widgets/customize_appbar_screen.dart';
 import 'package:peeview/screens/map/clinic_screen.dart';
 import 'package:intl/intl.dart';
 
