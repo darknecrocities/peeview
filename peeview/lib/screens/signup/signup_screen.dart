@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/gestures.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../widgets/cards/role_selector.dart';
 import '../../widgets/textfield/text_field_input.dart';
 import '../../widgets/textfield/phone_field.dart';
@@ -22,7 +23,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -55,9 +56,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     if (_passwordController.text.trim() !=
         _confirmPasswordController.text.trim()) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Passwords do not match ❌")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Passwords do not match ❌")),
+      );
       return;
     }
 
@@ -73,14 +74,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         return;
       }
 
-      // Patient Sign Up
-      UserCredential userCredential = await _auth
-          .createUserWithEmailAndPassword(
-            email: _emailController.text.trim(),
-            password: _passwordController.text.trim(),
-          );
+      // Patient Sign Up with Email/Password
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
-      // Update Firebase displayName
       await userCredential.user?.updateDisplayName(_nameController.text.trim());
       await userCredential.user?.reload();
 
@@ -97,31 +96,57 @@ class _SignUpScreenState extends State<SignUpScreen> {
         MaterialPageRoute(builder: (context) => const GenderScreen()),
       );
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: ${e.message}")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Error: ${e.message}")));
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
-  void _signUpWithGoogle() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Sign Up with Google Clicked"),
-        duration: Duration(seconds: 1),
-      ),
-    );
-  }
+  /// ✅ Sign Up with Google
+  Future<void> _signUpWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        setState(() => _isLoading = false);
+        return; // user canceled
+      }
 
-  void _signUpWithFacebook() {
-    print("Sign Up with Facebook clicked");
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Sign Up with Facebook Clicked"),
-        duration: Duration(seconds: 1),
-      ),
-    );
+      final GoogleSignInAuthentication googleAuth =
+      await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      UserCredential userCredential =
+      await _auth.signInWithCredential(credential);
+
+      // Save in Firestore if first time
+      final doc =
+      await _firestore.collection("users").doc(userCredential.user!.uid).get();
+      if (!doc.exists) {
+        await _firestore.collection("users").doc(userCredential.user!.uid).set({
+          "name": userCredential.user?.displayName ?? "No Name",
+          "email": userCredential.user?.email ?? "",
+          "phone": "$_countryCode${_phoneController.text.trim()}",
+          "role": _selectedRole,
+          "createdAt": FieldValue.serverTimestamp(),
+        });
+      }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const GenderScreen()),
+      );
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Google Sign-Up Error: ${e.message}")));
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -214,13 +239,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text(
-                            "Continue",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
+                      "Continue",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
 
                   const SizedBox(height: 16),
@@ -237,25 +262,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   const SizedBox(height: 16),
 
                   OutlinedButton.icon(
-                    onPressed: _signUpWithGoogle,
+                    onPressed: _isLoading ? null : _signUpWithGoogle,
                     icon: Image.asset(
                       "lib/assets/images/google_logo.png",
                       height: 18,
                     ),
                     label: const Text("Sign Up with Google"),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 46),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  OutlinedButton.icon(
-                    onPressed: _signUpWithFacebook,
-                    icon: Image.asset(
-                      "lib/assets/images/facebookk.png",
-                      height: 18,
-                    ),
-                    label: const Text("Sign Up with Facebook"),
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 46),
                     ),

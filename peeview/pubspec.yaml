@@ -55,6 +55,9 @@ dependencies:
     # Networking
   http: ^1.2.2
 
+  #Google sign in_app_review:
+  google_sign_in: ^6.1.0
+
     # Charts & graphs
   fl_chart: ^0.69.0
 

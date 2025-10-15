@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // ✅ Needed for SystemChrome
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../signup/signup_screen.dart';
-import '../dashboard_screen.dart'; // ✅ Import your dashboard
+import '../dashboard_screen.dart';
 import '../forgotPassword/forgotPassword.dart';
 
 class LoginInput extends StatefulWidget {
@@ -18,17 +19,16 @@ class _LoginInputState extends State<LoginInput> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void initState() {
     super.initState();
-    // ✅ Hide system navigation + status bar (immersive mode)
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   }
 
   @override
   void dispose() {
-    // ✅ Restore system UI when leaving screen
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
@@ -40,8 +40,6 @@ class _LoginInputState extends State<LoginInput> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-
-      // ✅ If login successful → go to DashboardScreen
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -49,9 +47,42 @@ class _LoginInputState extends State<LoginInput> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: ${e.message}")),
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Error: ${e.message}")));
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  /// ✅ Google Sign-In
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        setState(() => _isLoading = false); // User cancelled
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+      await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
       );
+
+      await _auth.signInWithCredential(credential);
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Google Sign-In Error: ${e.message}")));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -93,7 +124,7 @@ class _LoginInputState extends State<LoginInput> {
               ),
               const SizedBox(height: 30),
 
-              // 🔹 Email Field
+              // Email
               TextField(
                 controller: _emailController,
                 style: const TextStyle(color: Colors.grey),
@@ -107,6 +138,7 @@ class _LoginInputState extends State<LoginInput> {
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(32),
+                    borderSide: const BorderSide(color: Colors.grey),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(32),
@@ -119,21 +151,34 @@ class _LoginInputState extends State<LoginInput> {
 
               const SizedBox(height: 16),
 
-              // 🔹 Password Field
+              // Password
               TextField(
                 controller: _passwordController,
-                obscureText: true,
+                obscureText: _obscurePassword,
                 style: const TextStyle(color: Colors.grey),
                 cursorColor: Colors.grey,
                 decoration: InputDecoration(
                   hintText: "Password",
                   hintStyle: const TextStyle(color: Colors.grey),
                   prefixIcon: const Icon(Icons.lock, color: Colors.grey),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(32),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(32),
+                    borderSide: const BorderSide(color: Colors.grey),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(32),
@@ -152,7 +197,9 @@ class _LoginInputState extends State<LoginInput> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                      MaterialPageRoute(
+                          builder: (context) =>
+                          const ForgotPasswordScreen()),
                     );
                   },
                   child: const Text(
@@ -160,7 +207,6 @@ class _LoginInputState extends State<LoginInput> {
                     style: TextStyle(color: Colors.blue),
                   ),
                 ),
-
               ),
 
               const SizedBox(height: 12),
@@ -201,21 +247,12 @@ class _LoginInputState extends State<LoginInput> {
 
               const SizedBox(height: 20),
 
+              // ✅ Google Sign-In
               OutlinedButton.icon(
-                onPressed: () {},
-                icon: Image.asset("lib/assets/images/google_logo.png", height: 20),
+                onPressed: _isLoading ? null : _signInWithGoogle,
+                icon: Image.asset("lib/assets/images/google_logo.png",
+                    height: 20),
                 label: const Text("Log In with Google"),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              OutlinedButton.icon(
-                onPressed: () {},
-                icon: Image.asset("lib/assets/images/facebookk.png", height: 20),
-                label: const Text("Log In with Facebook"),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                 ),
@@ -231,7 +268,8 @@ class _LoginInputState extends State<LoginInput> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                        MaterialPageRoute(
+                            builder: (context) => const SignUpScreen()),
                       );
                     },
                     child: const Text(

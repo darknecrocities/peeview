@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show rootBundle, SystemChrome, SystemUiMode;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'doctors_screen.dart';
@@ -28,10 +28,19 @@ class _ClinicScreenState extends State<ClinicScreen> {
   @override
   void initState() {
     super.initState();
-    _loadInitialClinics(); // ✅ Load 10 facilities on start (before location)
+    // ✅ Hide system UI (immersive)
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    _loadInitialClinics();
   }
 
-  /// Load CSV and show 10 healthcare facilities (no location yet)
+  @override
+  void dispose() {
+    // ✅ Restore system UI when leaving
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    super.dispose();
+  }
+
+  /// Load CSV and show 10 facilities (default view)
   Future<void> _loadInitialClinics() async {
     setState(() => _isLoading = true);
 
@@ -76,7 +85,6 @@ class _ClinicScreenState extends State<ClinicScreen> {
 
     _allFacilities = allFacilities;
 
-    // ✅ Default view: Manila coordinates
     const centerLat = 14.5995;
     const centerLng = 120.9842;
 
@@ -95,11 +103,11 @@ class _ClinicScreenState extends State<ClinicScreen> {
     );
   }
 
-  /// Use current location and filter nearby healthcare (within 30km)
+  /// Initialize location and fetch nearby clinics
   Future<void> _initLocation() async {
     setState(() {
       _isLoading = true;
-      _showNearbyClinics = false; // 👈 hide list while loading
+      _showNearbyClinics = false;
     });
 
     final serviceEnabled = await _location.serviceEnabled() ||
@@ -138,7 +146,6 @@ class _ClinicScreenState extends State<ClinicScreen> {
       radiusKm: 30,
     );
 
-    // ✅ Show list again when done loading
     setState(() {
       _isLoading = false;
       _showNearbyClinics = false;
@@ -148,38 +155,32 @@ class _ClinicScreenState extends State<ClinicScreen> {
   Future<void> _fetchNearbyClinics({
     required double lat,
     required double lng,
-    double radiusKm = 30, // this radius will only affect the list, not markers
+    double radiusKm = 30,
   }) async {
     setState(() => _isLoading = true);
 
     List<Map<String, dynamic>> allWithDistance = [];
 
-    // ✅ Compute distance for all facilities (no radius filter for map markers)
     for (var f in _allFacilities) {
       final distance = _calculateDistance(lat, lng, f["lat"], f["lng"]);
       allWithDistance.add({...f, "distance": distance});
     }
 
-    // ✅ Sort by distance (nearest first)
     allWithDistance.sort((a, b) => a["distance"].compareTo(b["distance"]));
 
-    // ✅ Pick only top 10 for the LIST
     final topResults = allWithDistance.take(10).toList();
-
-    // ✅ But markers will show EVERYTHING (not just 10)
     _updateMarkers(allWithDistance);
 
     setState(() {
       _nearbyFacilities = topResults;
-      _showNearbyClinics = true; // keep list visible if needed
+      _showNearbyClinics = true;
       _isLoading = false;
     });
   }
 
-
   double _calculateDistance(
       double lat1, double lon1, double lat2, double lon2) {
-    const R = 6371; // Earth radius km
+    const R = 6371;
     final dLat = (lat2 - lat1) * pi / 180;
     final dLon = (lon2 - lon1) * pi / 180;
     final a = sin(dLat / 2) * sin(dLat / 2) +
@@ -203,8 +204,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
             title: f["name"],
             snippet: f["address"],
           ),
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueGreen),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
           onTap: () => _showClinicCard(f),
         ),
       );
@@ -217,8 +217,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
           position: LatLng(
               _currentLocation!.latitude!, _currentLocation!.longitude!),
           infoWindow: const InfoWindow(title: "You are here"),
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueAzure),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
         ),
       );
     }
@@ -237,8 +236,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
           children: [
             Text(
               clinic["name"],
-              style:
-              const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 5),
             Text(
@@ -251,8 +249,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
                 Chip(
                   label: Text("${clinic["type"]}"),
                   backgroundColor: Colors.blue.shade50,
-                  labelStyle: const TextStyle(
-                      fontSize: 12, color: Colors.blueAccent),
+                  labelStyle: const TextStyle(fontSize: 12, color: Colors.blueAccent),
                 ),
                 const SizedBox(width: 10),
                 if (clinic["distance"] != null)
@@ -267,7 +264,8 @@ class _ClinicScreenState extends State<ClinicScreen> {
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.pop(context);
-                Navigator.push(context,
+                Navigator.push(
+                    context,
                     MaterialPageRoute(builder: (_) => const DoctorScreen()));
               },
               icon: const Icon(Icons.calendar_today),
@@ -310,7 +308,6 @@ class _ClinicScreenState extends State<ClinicScreen> {
             right: 15,
             child: Column(
               children: [
-                // Search bar
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   decoration: BoxDecoration(
@@ -349,8 +346,6 @@ class _ClinicScreenState extends State<ClinicScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-
-                // Use my current location
                 GestureDetector(
                   onTap: _initLocation,
                   child: Container(
@@ -404,8 +399,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
                         margin: const EdgeInsets.symmetric(vertical: 5),
                         decoration: BoxDecoration(
                           border: Border(
-                              bottom:
-                              BorderSide(color: Colors.grey.shade300)),
+                              bottom: BorderSide(color: Colors.grey.shade300)),
                         ),
                         child: Row(
                           children: [
@@ -443,8 +437,7 @@ class _ClinicScreenState extends State<ClinicScreen> {
                                 ],
                               ),
                             ),
-                            const Icon(Icons.location_on,
-                                color: Colors.black),
+                            const Icon(Icons.location_on, color: Colors.black),
                           ],
                         ),
                       ),
