@@ -98,6 +98,7 @@ class _MessageScreenState extends State<MessageScreen>
             ),
           ),
           // 🔹 Tabs (All, Doctors, Clinic)
+          // Replace your TabBar widget with this
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
@@ -112,13 +113,17 @@ class _MessageScreenState extends State<MessageScreen>
               ),
               labelColor: Colors.white,
               unselectedLabelColor: Colors.black,
+              // ✅ Make tabs equally divided
+              indicatorPadding: EdgeInsets.zero,
+              labelPadding: EdgeInsets.zero,
               tabs: const [
-                Tab(text: "All"),
-                Tab(text: "Doctors"),
-                Tab(text: "Clinic"),
-              ],
+                Expanded(child: Center(child: Text("All"))),
+                Expanded(child: Center(child: Text("Doctors"))),
+                Expanded(child: Center(child: Text("Clinic"))),
+              ].map((widget) => Tab(child: widget)).toList(),
             ),
           ),
+
           // 🔹 Tab Views
           Expanded(
             child: TabBarView(

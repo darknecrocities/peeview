@@ -177,9 +177,10 @@ class _CalendarAppointmentScreenState extends State<CalendarAppointmentScreen> {
                   });
                 },
                 calendarStyle: const CalendarStyle(
-                  todayDecoration: BoxDecoration(
-                    color: Colors.blue,
-                    shape: BoxShape.circle,
+                  todayDecoration: BoxDecoration(), // no highlight
+                  todayTextStyle: TextStyle(
+                    color: Colors.grey, // today looks like other days
+                    fontSize: 13,
                   ),
                   selectedDecoration: BoxDecoration(
                     color: Colors.blueAccent,
@@ -200,7 +201,7 @@ class _CalendarAppointmentScreenState extends State<CalendarAppointmentScreen> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
+              )
             ),
 
             const SizedBox(height: 18),

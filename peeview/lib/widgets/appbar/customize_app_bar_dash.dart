@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:peeview/screens/profile/profile_screen.dart'; // ✅ import ProfileScreen
 
 class CustomizeAppBarDash extends StatelessWidget
     implements PreferredSizeWidget {
@@ -36,14 +37,24 @@ class CustomizeAppBarDash extends StatelessWidget
               Row(
                 children: [
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // Example: handle notifications
+                    },
                     icon: const Icon(
                       Icons.notifications_none,
                       color: Colors.white,
                     ),
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // Navigate to ProfileScreen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ProfileScreen(),
+                        ),
+                      );
+                    },
                     icon: const Icon(
                       Icons.account_circle_outlined,
                       color: Colors.white,

@@ -239,25 +239,66 @@ class _AppointmentScreenState extends State<AppointmentScreen>
                   : status == "Completed"
                   ? [
                 OutlinedButton(
-                  onPressed: () {
-                    debugPrint("Book again tapped");
+                  onPressed: () async {
+                    final data =
+                    filteredDocs[index].data() as Map<String, dynamic>;
+                    final docId = filteredDocs[index].id;
+
+                    // 1️⃣ Pick a new date
+                    final newDate = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                    );
+                    if (newDate == null) return; // user cancelled
+
+                    // 2️⃣ Pick a new time
+                    final newTime = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.now(),
+                    );
+                    if (newTime == null) return; // user cancelled
+
+                    // 3️⃣ Combine date and time
+                    final newDateTime = DateTime(
+                      newDate.year,
+                      newDate.month,
+                      newDate.day,
+                      newTime.hour,
+                      newTime.minute,
+                    );
+
+                    // 4️⃣ Update Firestore appointment
+                    await FirebaseFirestore.instance
+                        .collection('appointments')
+                        .doc(docId)
+                        .update({
+                      "date": newDateTime,
+                      "status": "Upcoming",
+                    });
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text("Appointment rescheduled successfully!")),
+                    );
                   },
                   child: const Text("Book again"),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                  ),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
                   onPressed: () {
-                    // Add your button action here
+                    debugPrint("Leave a Review tapped");
                   },
                   child: const Text(
                     "Leave a Review",
                     style: TextStyle(color: Colors.white),
                   ),
-                )
+                ),
               ]
                   : [],
+
+
             );
           },
         );

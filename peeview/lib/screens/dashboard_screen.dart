@@ -1,9 +1,10 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import '../widgets/navbar/customize_bottom_navbar.dart';
+import '../widgets/navbar/customize_navbar.dart';
 import '../widgets/cards/dashboard_categories.dart';
 import '../widgets/appbar/customize_app_bar_dash.dart';
 
@@ -17,6 +18,42 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
+
+  final List<Map<String, dynamic>> healthTips = [
+    {
+      "title": "Stay Hydrated",
+      "desc":
+      "Drinking at least 8 glasses of water a day helps flush out toxins, keeps your kidneys healthy, and lowers the risk of urinary tract infections.",
+      "icon": Icons.water_drop,
+      "color": Color(0XFF0062C8),
+    },
+    {
+      "title": "Eat a Balanced Diet",
+      "desc":
+      "Including fruits, vegetables, and fiber in your meals supports overall wellness and can help prevent conditions that show up in urinalysis results.",
+      "icon": Icons.food_bank_outlined,
+      "color": Color(0xFF003366), // Dark blue
+    },
+    {
+      "title": "Don’t Hold Your Urine",
+      "desc":
+      "Holding urine for long periods can increase the risk of bacterial growth that leads to infections. Make sure to go when you feel the urge.",
+      "icon": Icons.restore_from_trash_outlined,
+      "color": Color(0xFF4169E1), // Royal blue
+    },
+    {
+      "title": "Track Your Results",
+      "desc":
+      "Regularly checking and comparing your urinalysis results helps you spot changes early and take action before health issues get worse.",
+      "icon": Icons.insert_chart_outlined,
+      "color": Color(0xFF87CEFA), // Light blue
+    },
+  ];
+
+  Map<String, dynamic> getRandomTip() {
+    final random = Random();
+    return healthTips[random.nextInt(healthTips.length)];
+  }
 
   @override
   void initState() {
@@ -38,6 +75,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _onNavTap(int index) {
     setState(() => _currentIndex = index);
+  }
+
+  Widget _healthTipCard() {
+    final tip = getRandomTip();
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: tip['color'],
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tip['title'],
+                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  tip['desc'],
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            tip['icon'],
+            size: 100,
+            color: Colors.white,
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _appointmentsList() {
@@ -239,7 +312,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               TextField(
                 decoration: InputDecoration(
                   hintText: "Search results, doctors...",
@@ -257,59 +330,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               const DashboardCategories(),
-              SizedBox(height: 30),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0XFF0062C8),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            "Stay Hydrated",
-                            style: TextStyle(color: Colors.white, fontSize: 18),
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            "Drinking at least 8 glasses of water a day helps flush out toxins, keeps your kidneys healthy, and lowers the risk of urinary tract infections.",
-                            style: TextStyle(color: Colors.white, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(
-                      Icons.water_drop,
-                      size: 100,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-              ),
+              const SizedBox(height: 30),
+              _healthTipCard(), // 👈 Random health tip card
               const SizedBox(height: 30),
               Text(
                 "Upcoming Appointment",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 16),
               _appointmentsList(),
               const SizedBox(height: 30),
               Text(
                 "Find the Nearest Clinic",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 10),
               SizedBox(
                 height: 150,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   children: [
                     _clinicCard("HealthPlus Clinic", "2.5 km", true),
                     const SizedBox(width: 12),
