@@ -5,7 +5,8 @@ import '../../widgets/navbar/customize_navbar.dart';
 import '../exclusive widgets/customize_appbar_screen.dart';
 import '../feedback/support_feedback_screen.dart';
 import 'package:flutter/services.dart';
-import 'package:peeview/screens/login/login_screen.dart'; // ✅ Import LoginScreen
+import 'package:peeview/screens/login/login_screen.dart';
+import 'package:peeview/widgets/appbar/customize_app_bar_dash.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -56,7 +57,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _currentIndex = index);
   }
 
-  /// ✅ Sign-out method that logs the user out and redirects to LoginScreen
   Future<void> _signOut() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -84,7 +84,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
-            (Route<dynamic> route) => false,
+        (Route<dynamic> route) => false,
       );
     }
   }
@@ -93,14 +93,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: CustomizeAppBarScreen(
-        onNotificationsTap: () => debugPrint("Notifications tapped"),
-        onProfileTap: () => debugPrint("Profile tapped"),
-      ),
+      appBar: CustomizeAppBarDash(),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 46),
+          const SizedBox(height: 12),
           const Text(
             "Profile Details",
             style: TextStyle(
@@ -110,7 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 8),
 
           // Profile Info Card
           Padding(
@@ -173,16 +170,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   _buildMenuItem(Icons.person, "Account"),
                   _buildMenuItem(Icons.settings, "Settings"),
-                  _buildMenuItem(Icons.support_agent, "Support & Feedback",
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SupportFeedbackScreen(),
-                          ),
-                        );
-                      }),
-                  _buildMenuItem(Icons.logout, "Sign Out", onTap: _signOut), // ✅ Linked to _signOut
+                  _buildMenuItem(
+                    Icons.support_agent,
+                    "Support & Feedback",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SupportFeedbackScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuItem(
+                    Icons.logout,
+                    "Sign Out",
+                    onTap: _signOut,
+                  ), // ✅ Linked to _signOut
                 ],
               ),
             ),

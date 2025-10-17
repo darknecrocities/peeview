@@ -9,8 +9,7 @@ class ScanResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final aiInsights = results["aiInsights"] ?? "No insights generated.";
-    final suggestedAction =
-        results["suggestedAction"] ?? "No action provided.";
+    final suggestedAction = results["suggestedAction"] ?? "No action provided.";
     final diseasePrediction = results["diseasePrediction"] ?? {};
     final int ckdProbability = diseasePrediction["ckdProbability"] ?? 0;
     final int nonCkdProbability = diseasePrediction["nonCkdProbability"] ?? 100;
@@ -48,7 +47,6 @@ class ScanResultScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // 🟦 Header Card
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -60,9 +58,10 @@ class ScanResultScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                      color: Colors.blue.withOpacity(0.3),
-                      offset: const Offset(0, 4),
-                      blurRadius: 10)
+                    color: Color(0xFF0062C8).withOpacity(0.3),
+                    offset: const Offset(0, 4),
+                    blurRadius: 10,
+                  ),
                 ],
               ),
               child: Row(
@@ -74,19 +73,23 @@ class ScanResultScreen extends StatelessWidget {
                       Text(
                         "peeView Test Result",
                         style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 19,
-                            fontWeight: FontWeight.bold),
+                          color: Colors.white,
+                          fontSize: 19,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       SizedBox(height: 6),
-                      Text("October 5, 2025  •  10:15 PM",
-                          style:
-                          TextStyle(color: Colors.white70, fontSize: 13)),
+                      Text(
+                        "October 5, 2025  •  10:15 PM",
+                        style: TextStyle(color: Colors.white70, fontSize: 13),
+                      ),
                     ],
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 8),
+                      horizontal: 18,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: getStatusColor(),
                       borderRadius: BorderRadius.circular(20),
@@ -94,17 +97,16 @@ class ScanResultScreen extends StatelessWidget {
                     child: Text(
                       status,
                       style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13),
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
-
-            // 🧠 AI Insights Card
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
@@ -121,32 +123,41 @@ class ScanResultScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("AI Insights",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: Color(0xFF1E63D0))),
+                  const Text(
+                    "AI Insights",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: Color(0xFF1E63D0),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     aiInsights,
                     textAlign: TextAlign.justify,
                     style: const TextStyle(
-                        fontSize: 15,
-                        height: 1.6,
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w400),
+                      fontSize: 15,
+                      height: 1.6,
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                   const SizedBox(height: 14),
                   RichText(
                     text: TextSpan(
                       style: const TextStyle(
-                          fontSize: 15, color: Colors.black87, height: 1.5),
+                        fontSize: 15,
+                        color: Colors.black87,
+                        height: 1.5,
+                      ),
                       children: [
                         const TextSpan(
-                            text: "Suggested Action: ",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1E63D0))),
+                          text: "Suggested Action: ",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E63D0),
+                          ),
+                        ),
                         TextSpan(text: suggestedAction),
                       ],
                     ),
@@ -155,8 +166,6 @@ class ScanResultScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-
-            // 📅 Button
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
@@ -164,19 +173,20 @@ class ScanResultScreen extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30)),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
                   side: const BorderSide(color: Color(0xFF1E63D0), width: 1.5),
                 ),
-                child: const Text("SCHEDULE A CONSULTATION",
-                    style: TextStyle(
-                        color: Color(0xFF1E63D0),
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5)),
+                child: const Text(
+                  "SCHEDULE A CONSULTATION",
+                  style: TextStyle(
+                    color: Color(0xFF1E63D0),
+                    letterSpacing: 0.5,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 22),
-
-            // 🔵 Disease Prediction Card
             Container(
               padding: const EdgeInsets.all(22),
               width: double.infinity,
@@ -193,11 +203,14 @@ class ScanResultScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const Text("Disease Prediction",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17,
-                          color: Colors.black87)),
+                  const Text(
+                    "Disease Prediction",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 17,
+                      color: Colors.black87,
+                    ),
+                  ),
                   const SizedBox(height: 18),
                   CircularPercentIndicator(
                     radius: 70,
@@ -208,9 +221,10 @@ class ScanResultScreen extends StatelessWidget {
                     center: Text(
                       "$ckdProbability%",
                       style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                     ),
                     progressColor: Colors.redAccent,
                     backgroundColor: Colors.grey.shade200,
@@ -220,20 +234,25 @@ class ScanResultScreen extends StatelessWidget {
                   const Text(
                     "Chronic Kidney Disease (CKD)",
                     style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w500),
+                      fontSize: 15,
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(height: 10),
-                  Text("Non-CKD: $nonCkdProbability%",
-                      style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.black87)),
+                  Text(
+                    "Non-CKD: $nonCkdProbability%",
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black87,
+                    ),
+                  ),
                   const SizedBox(height: 6),
-                  const Text("Probability",
-                      style:
-                      TextStyle(fontSize: 13, color: Colors.grey)),
+                  const Text(
+                    "Probability",
+                    style: TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
                 ],
               ),
             ),

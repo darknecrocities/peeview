@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // 👈 for hiding system UI
+import 'package:flutter/services.dart';
 import '../login/login_screen.dart';
 
 class GuideStart extends StatefulWidget {
@@ -16,17 +16,17 @@ class _GuideStartState extends State<GuideStart> {
     {
       "image": "lib/assets/images/easyhometest.png",
       "text":
-      "Get instant urine analysis results from the comfort of your home with just your smartphone."
+          "Get instant urine analysis results from the comfort of your home with just your smartphone.",
     },
     {
       "image": "lib/assets/images/aipowered.png",
       "text":
-      "Advanced technology interprets your test results and provides clear, actionable health insights"
+          "Advanced technology interprets your test results and provides clear, actionable health insights",
     },
     {
       "image": "lib/assets/images/connect.png",
       "text":
-      "Find nearby clinics and healthcare providers when you need professional follow-up care"
+          "Find nearby clinics and healthcare providers when you need professional follow-up care",
     },
   ];
 
@@ -46,13 +46,11 @@ class _GuideStartState extends State<GuideStart> {
   @override
   void initState() {
     super.initState();
-    // 👇 Hide system UI (immersive mode)
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   }
 
   @override
   void dispose() {
-    // 👇 Restore system UI when leaving this screen
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
@@ -60,7 +58,7 @@ class _GuideStartState extends State<GuideStart> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // ✅ White background
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -72,9 +70,15 @@ class _GuideStartState extends State<GuideStart> {
                 MaterialPageRoute(builder: (context) => const LoginScreen()),
               );
             },
-            child: const Text(
-              "Skip",
-              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+            child: Padding(
+              padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
+              child: const Text(
+                "Skip",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ],
@@ -82,7 +86,6 @@ class _GuideStartState extends State<GuideStart> {
       body: Column(
         children: [
           const Spacer(),
-          // ✅ AnimatedSwitcher for smooth fade effect on image
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 500),
             transitionBuilder: (Widget child, Animation<double> animation) {
@@ -95,7 +98,6 @@ class _GuideStartState extends State<GuideStart> {
             ),
           ),
           const SizedBox(height: 30),
-          // ✅ AnimatedSwitcher for text
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 500),
             transitionBuilder: (Widget child, Animation<double> animation) {
@@ -107,10 +109,7 @@ class _GuideStartState extends State<GuideStart> {
               child: Text(
                 _pages[_currentIndex]["text"]!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
+                style: const TextStyle(fontSize: 16, color: Colors.black87),
               ),
             ),
           ),
@@ -119,15 +118,15 @@ class _GuideStartState extends State<GuideStart> {
             padding: const EdgeInsets.only(
               left: 24.0,
               right: 24.0,
-              bottom: 50.0, // 👈 lift button above navigation area
+              bottom: 50.0,
             ),
             child: ElevatedButton(
               onPressed: _nextPage,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.lightBlue,
+                backgroundColor: Color(0xFF0062C8),
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(24),
                 ),
               ),
               child: Text(

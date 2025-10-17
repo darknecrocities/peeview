@@ -5,13 +5,12 @@ import 'package:peeview/screens/dashboard_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-
 class AppointmentResultScreen extends StatefulWidget {
   final String doctorName;
   final String patientName;
   final DateTime date;
   final String time;
-  final String doctorImage; // ✅ added for image
+  final String doctorImage;
   final String doctorSpecialty;
   final String doctorClinic;
 
@@ -97,12 +96,13 @@ class _AppointmentResultScreenState extends State<AppointmentResultScreen> {
               "My Appointment",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
 
+            const SizedBox(height: 16),
             // Doctor card
             Card(
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               elevation: 3,
               child: ListTile(
                 leading: ClipRRect(
@@ -119,16 +119,17 @@ class _AppointmentResultScreenState extends State<AppointmentResultScreen> {
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                    "${widget.doctorSpecialty}\n${widget.doctorClinic}\n${_formatDate(widget.date)} | ${widget.time}"),
+                  "${widget.doctorSpecialty}\n${widget.doctorClinic}\n${_formatDate(widget.date)} | ${widget.time}",
+                ),
               ),
             ),
 
             const SizedBox(height: 20),
-
             // Appointment Info
-            const Text("Scheduled Appointment",
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 16)),
+            const Text(
+              "Scheduled Appointment",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
             const SizedBox(height: 8),
             Text(
               _formatDate(widget.date),
@@ -156,14 +157,10 @@ class _AppointmentResultScreenState extends State<AppointmentResultScreen> {
             ),
             const SizedBox(height: 20),
 
-
             // Patient Info
             const Text(
               "Patient Information",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 8),
             Text(
@@ -192,8 +189,6 @@ class _AppointmentResultScreenState extends State<AppointmentResultScreen> {
               style: TextStyle(color: Colors.grey),
             ),
 
-
-
             const SizedBox(height: 100),
 
             // Back button
@@ -204,23 +199,25 @@ class _AppointmentResultScreenState extends State<AppointmentResultScreen> {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const DashboardScreen()),
-                        (route) => false,
+                      builder: (context) => const DashboardScreen(),
+                    ),
+                    (route) => false,
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
-                  padding:
-                  const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30)),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
                 ),
                 child: const Text(
                   "Back to Dashboard",
                   style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold),
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -242,4 +239,3 @@ class _AppointmentResultScreenState extends State<AppointmentResultScreen> {
     return "${date.month}/${date.day}/${date.year}";
   }
 }
-

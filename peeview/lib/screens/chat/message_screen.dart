@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:peeview/widgets/appbar/customize_app_bar_dash.dart';
 import '../../widgets/navbar/customize_navbar.dart';
 import 'package:peeview/screens/exclusive%20widgets/customize_appbar_screen.dart';
 import 'package:peeview/screens/dashboard_screen.dart';
 import 'package:peeview/screens/appointment/appointment_screen.dart';
 import 'package:peeview/screens/profile/profile_screen.dart';
 import 'package:flutter/services.dart';
-
 
 class MessageScreen extends StatefulWidget {
   const MessageScreen({super.key});
@@ -46,10 +46,8 @@ class _MessageScreenState extends State<MessageScreen>
   void initState() {
     super.initState();
 
-    // 🔹 Initialize TabController
     _tabController = TabController(length: 3, vsync: this);
 
-    // 🔹 Hide Android navbar & status bar
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.immersiveSticky,
       overlays: [],
@@ -65,55 +63,54 @@ class _MessageScreenState extends State<MessageScreen>
     super.dispose();
   }
 
-
   void _onNavTap(int index) {
     setState(() => _currentIndex = index);
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: CustomizeAppBarScreen(
-          onNotificationsTap: () => debugPrint("Notifications tapped"),
-          onProfileTap: () => debugPrint("Profile tapped"),
-        ),
-      ),
+      appBar: CustomizeAppBarDash(),
       body: Column(
         children: [
-          // 🔹 Header with "Message" and Search
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text(
-                  "Message",
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+            padding: EdgeInsets.fromLTRB(
+                screenWidth * 0.04, screenHeight * 0.015, screenWidth * 0.04, screenHeight * 0.01),
+            child: Center(
+              child: Text(
+                "Messages",
+                style: TextStyle(
+                  fontSize: screenWidth * 0.06,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
-                Icon(Icons.search, size: 24),
-              ],
+              ),
             ),
           ),
-          // 🔹 Tabs (All, Doctors, Clinic)
-          // Replace your TabBar widget with this
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
             decoration: BoxDecoration(
               color: const Color(0xFFE9F0FF),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(screenWidth * 0.06),
+                topRight: Radius.circular(screenWidth * 0.06),
+              ),
             ),
             child: TabBar(
               controller: _tabController,
               indicator: BoxDecoration(
                 color: const Color(0xFF0062C8),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(screenWidth * 0.06),
+                  topRight: Radius.circular(screenWidth * 0.06),
+                ),
               ),
               labelColor: Colors.white,
               unselectedLabelColor: Colors.black,
-              // ✅ Make tabs equally divided
               indicatorPadding: EdgeInsets.zero,
               labelPadding: EdgeInsets.zero,
               tabs: const [
@@ -123,32 +120,32 @@ class _MessageScreenState extends State<MessageScreen>
               ].map((widget) => Tab(child: widget)).toList(),
             ),
           ),
-
-          // 🔹 Tab Views
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildMessageList(messages),
+                _buildMessageList(messages, screenWidth),
                 _buildMessageList(
                   messages.where((m) => m["name"]!.contains("Dr.")).toList(),
+                  screenWidth,
                 ),
                 _buildMessageList(
                   messages.where((m) => m["name"]!.contains("Clinic")).toList(),
+                  screenWidth,
                 ),
               ],
             ),
           ),
         ],
       ),
-      // 🔹 Floating new message button
       floatingActionButton: FloatingActionButton(
+        shape: const CircleBorder(),
         backgroundColor: const Color(0xFF0062C8),
-        child: const Icon(Icons.chat, color: Colors.white),
+        child: Icon(Icons.chat, color: Colors.white, size: screenWidth * 0.07),
         onPressed: () => debugPrint("New message tapped"),
       ),
       bottomNavigationBar: CustomizeNavBar(
-        currentIndex: 3, // ✅ Chat tab is active
+        currentIndex: 3,
         onTap: (index) {
           if (index == 0) {
             Navigator.pushReplacement(
@@ -186,31 +183,35 @@ class _MessageScreenState extends State<MessageScreen>
     );
   }
 
-  Widget _buildMessageList(List<Map<String, String>> msgs) {
+  Widget _buildMessageList(List<Map<String, String>> msgs, double screenWidth) {
     return ListView.separated(
       itemCount: msgs.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
+      separatorBuilder: (_, __) => Divider(height: screenWidth * 0.01),
       itemBuilder: (context, index) {
         final msg = msgs[index];
         return ListTile(
           leading: CircleAvatar(
             backgroundImage: NetworkImage(msg["image"]!),
-            radius: 24,
+            radius: screenWidth * 0.06,
           ),
           title: Text(
             msg["name"]!,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: screenWidth * 0.04,
+            ),
           ),
           subtitle: Text(
             msg["message"]!,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: screenWidth * 0.035),
           ),
           trailing: Text(
             msg["time"]!,
-            style: const TextStyle(color: Colors.grey, fontSize: 12),
+            style: TextStyle(color: Colors.grey, fontSize: screenWidth * 0.03),
           ),
           onTap: () {
             Navigator.push(
@@ -229,7 +230,6 @@ class _MessageScreenState extends State<MessageScreen>
   }
 }
 
-// 🔹 Chat Screen
 class ChatScreen extends StatefulWidget {
   final String doctorName;
   final String doctorImage;
@@ -251,18 +251,18 @@ class _ChatScreenState extends State<ChatScreen> {
       "sender": "doctor",
       "text":
       "Hello Graciella, your test shows signs of dehydration. Please drink more water daily, about 8 glasses.",
-      "time": "10:08 PM"
+      "time": "10:08 PM",
     },
     {
       "sender": "user",
       "text": "I’ve been tired and thirsty lately. Could that be why?",
-      "time": "10:09 PM"
+      "time": "10:09 PM",
     },
     {
       "sender": "doctor",
       "text":
       "Yes, those are common symptoms of dehydration. Try increasing water intake. If you still feel unwell, let me know.",
-      "time": "10:10 PM"
+      "time": "10:10 PM",
     },
   ];
   bool _isTyping = false;
@@ -295,10 +295,10 @@ class _ChatScreenState extends State<ChatScreen> {
         "contents": [
           {
             "parts": [
-              {"text": prompt}
-            ]
-          }
-        ]
+              {"text": prompt},
+            ],
+          },
+        ],
       }),
     );
 
@@ -313,6 +313,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -322,84 +325,91 @@ class _ChatScreenState extends State<ChatScreen> {
         title: Row(
           children: [
             CircleAvatar(
-              backgroundImage: NetworkImage(widget.doctorImage),
-            ),
-            const SizedBox(width: 8),
+                backgroundImage: NetworkImage(widget.doctorImage),
+                radius: screenWidth * 0.07),
+            SizedBox(width: screenWidth * 0.02),
             Expanded(
               child: Text(
                 widget.doctorName,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: screenWidth * 0.045,
                 ),
                 maxLines: 1,
-                overflow: TextOverflow.ellipsis, // ✅ prevents overflow
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
         ),
-        actions: const [
-          Icon(Icons.video_call, color: Colors.black54),
-          SizedBox(width: 12),
-          Icon(Icons.call, color: Colors.black54),
-          SizedBox(width: 12),
-          Icon(Icons.more_vert, color: Colors.black54),
-          SizedBox(width: 8),
+        actions: [
+          Icon(Icons.video_call, color: Colors.black54, size: screenWidth * 0.07),
+          SizedBox(width: screenWidth * 0.02),
+          Icon(Icons.call, color: Colors.black54, size: screenWidth * 0.07),
+          SizedBox(width: screenWidth * 0.02),
+          Icon(Icons.more_vert, color: Colors.black54, size: screenWidth * 0.07),
+          SizedBox(width: screenWidth * 0.02),
         ],
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(screenWidth * 0.04),
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final msg = _messages[index];
                 final isUser = msg["sender"] == "user";
                 return Column(
-                  crossAxisAlignment:
-                  isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  crossAxisAlignment: isUser
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 10),
-                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.035,
+                        vertical: screenHeight * 0.012,
+                      ),
+                      margin: EdgeInsets.symmetric(vertical: screenHeight * 0.005),
                       decoration: BoxDecoration(
                         color: isUser
                             ? const Color(0xFF0062C8)
                             : Colors.grey[200],
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(screenWidth * 0.04),
                       ),
                       child: Text(
                         msg["text"]!,
                         style: TextStyle(
                           color: isUser ? Colors.white : Colors.black87,
-                          fontSize: 15,
+                          fontSize: screenWidth * 0.038,
                           height: 1.4,
                         ),
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
+                      padding: EdgeInsets.only(bottom: screenHeight * 0.005),
                       child: Text(
                         msg["time"]!,
-                        style:
-                        const TextStyle(color: Colors.grey, fontSize: 11),
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: screenWidth * 0.03,
+                        ),
                       ),
-                    )
+                    ),
                   ],
                 );
               },
             ),
           ),
           if (_isTyping)
-            const Padding(
-              padding: EdgeInsets.all(8.0),
+            Padding(
+              padding: EdgeInsets.all(screenWidth * 0.03),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text("Dr. is typing...",
-                    style: TextStyle(color: Colors.grey)),
+                child: Text(
+                  "Dr. is typing...",
+                  style: TextStyle(color: Colors.grey, fontSize: screenWidth * 0.035),
+                ),
               ),
             ),
           SafeArea(
@@ -408,16 +418,18 @@ class _ChatScreenState extends State<ChatScreen> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: "Type a message...",
                       border: InputBorder.none,
-                      contentPadding:
-                      EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.04,
+                        vertical: screenHeight * 0.015,
+                      ),
                     ),
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.send, color: Color(0xFF0062C8)),
+                  icon: Icon(Icons.send, color: const Color(0xFF0062C8), size: screenWidth * 0.07),
                   onPressed: () => _sendMessage(_controller.text),
                 ),
               ],

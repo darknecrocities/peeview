@@ -26,15 +26,12 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
       appBar: CustomizeAppBarDash(),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // ✅ Custom Back Button
               const CustomizeBackButton(),
-
               const SizedBox(height: 12),
-
               // Header
               const Center(
                 child: Text(
@@ -51,10 +48,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
               // Subtitle above checkboxes
               const Text(
                 "Enter your urine test results step by step.",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 30),
@@ -64,46 +58,21 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _checkItem("Complete urinalysis (15 tests)"),
-                  const SizedBox(height: 12),
                   _checkItem("Takes about 5-10 minutes"),
-                  const SizedBox(height: 12),
                   _checkItem("AI analysis when complete"),
-                ],
-              ),
-
-              const SizedBox(height: 40),
-
-              // Requirements
-              const Align(
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: EdgeInsets.only(right: 150),
-                  child: Text(
-                    "What you’ll need:",
-                    textAlign: TextAlign.center,
+                  const SizedBox(height: 40),
+                  Text(
+                    "What you’ll need:\n• Lab report\n• A few minutes of your time",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 14,
                       color: Colors.grey,
                     ),
                   ),
-                ),
+                ],
               ),
-              const SizedBox(height: 8),
 
-              const Align(
-                alignment: Alignment.center,
-                child: Text(
-                  "• Lab report\n• A few minutes of your time",
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 60),
-
+              const Spacer(),
               // Get Started button
               SizedBox(
                 width: double.infinity,
@@ -127,7 +96,6 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                       return;
                     }
 
-                    // 🔹 Fetch user profile from `users` collection
                     final userDoc = await _firestore
                         .collection("users")
                         .doc(currentUser.uid)
@@ -139,14 +107,14 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                       userName = data["name"] ?? "User";
                     }
 
-                    // 🔹 Create a new test session with userId and name
-                    final docRef =
-                    await _firestore.collection("urine_tests").add({
-                      "startedAt": FieldValue.serverTimestamp(),
-                      "completed": false,
-                      "userId": currentUser.uid,
-                      "userName": userName,
-                    });
+                    final docRef = await _firestore
+                        .collection("urine_tests")
+                        .add({
+                          "startedAt": FieldValue.serverTimestamp(),
+                          "completed": false,
+                          "userId": currentUser.uid,
+                          "userName": userName,
+                        });
 
                     final sessionId = docRef.id;
 
@@ -173,10 +141,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
               const SizedBox(height: 12),
               const Text(
                 "Note: This app provides health guidance only and\ndoes not replace professional medical advice.",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -197,27 +162,18 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
 
   // Fixed checked checkbox widget
   static Widget _checkItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 33.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(
-            Icons.check_box,
-            color: Color(0xFF33B5FF),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.check_box, color: Color(0xFF0062C8)),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

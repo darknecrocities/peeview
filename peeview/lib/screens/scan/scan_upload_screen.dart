@@ -1,4 +1,3 @@
-// lib/screens/scan_upload_screen.dart
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -7,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image/image.dart' as img;
 import 'package:http/http.dart' as http;
-
 import '../../widgets/navbar/customize_navbar.dart';
 import '../exclusive widgets/customize_appbar_screen.dart';
 import 'scan_result.dart';
@@ -77,14 +75,17 @@ class _ScanUploadScreenState extends State<ScanUploadScreen>
 
   // Capture only sets the preview image now (no immediate OCR)
   Future<void> _captureAndProcess() async {
-    if (_cameraController == null || !_cameraController!.value.isInitialized) return;
+    if (_cameraController == null || !_cameraController!.value.isInitialized)
+      return;
     try {
       final image = await _cameraController!.takePicture();
       _capturedImage = image;
       setState(() {});
     } catch (e) {
       debugPrint('Capture error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to capture image')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to capture image')));
     }
   }
 
@@ -98,7 +99,9 @@ class _ScanUploadScreenState extends State<ScanUploadScreen>
       }
     } catch (e) {
       debugPrint('Pick error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to pick image')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to pick image')));
     }
   }
 
@@ -138,7 +141,9 @@ class _ScanUploadScreenState extends State<ScanUploadScreen>
       final recognized = await textRecognizer.processImage(inputImage);
       final ocrText = recognized.text.trim();
       if (ocrText.isEmpty) {
-        throw Exception('No text detected. Try a clearer image or different crop.');
+        throw Exception(
+          'No text detected. Try a clearer image or different crop.',
+        );
       }
       await _sendToGemini(ocrText);
     } finally {
@@ -153,7 +158,8 @@ class _ScanUploadScreenState extends State<ScanUploadScreen>
     );
 
     // 🧠 AI prompt: 80-word insight + numeric probability
-    final prompt = """
+    final prompt =
+        """
 You are an AI medical assistant analyzing urinalysis results.
 
 Below is the OCR text from a patient's urine test:
@@ -173,10 +179,10 @@ Keep your response plain text. Do not use JSON, bullet points, or markdown.
       "contents": [
         {
           "parts": [
-            {"text": prompt}
-          ]
-        }
-      ]
+            {"text": prompt},
+          ],
+        },
+      ],
     });
 
     try {
@@ -228,16 +234,18 @@ Keep your response plain text. Do not use JSON, bullet points, or markdown.
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ScanResultScreen(results: {
-              "aiInsights": aiText,
-              "suggestedAction":
-              "Consult a healthcare professional for further advice.",
-              "diseasePrediction": {
-                "ckdProbability": ckdProbability,
-                "nonCkdProbability": nonCkdProbability,
+            builder: (_) => ScanResultScreen(
+              results: {
+                "aiInsights": aiText,
+                "suggestedAction":
+                    "Consult a healthcare professional for further advice.",
+                "diseasePrediction": {
+                  "ckdProbability": ckdProbability,
+                  "nonCkdProbability": nonCkdProbability,
+                },
+                "status": status,
               },
-              "status": status,
-            }),
+            ),
           ),
         );
       } else {
@@ -263,13 +271,12 @@ Keep your response plain text. Do not use JSON, bullet points, or markdown.
     }
   }
 
-
-
   void _toggleFlash() {
     if (_cameraController == null) return;
     _isFlashOn = !_isFlashOn;
-    _cameraController!
-        .setFlashMode(_isFlashOn ? FlashMode.torch : FlashMode.off);
+    _cameraController!.setFlashMode(
+      _isFlashOn ? FlashMode.torch : FlashMode.off,
+    );
     setState(() {});
   }
 
@@ -320,14 +327,18 @@ Keep your response plain text. Do not use JSON, bullet points, or markdown.
       {
         'icon': _isFlashOn ? Icons.flash_on : Icons.flash_off,
         'onTap': _toggleFlash,
-        'color': Colors.yellowAccent
+        'color': Colors.yellowAccent,
       },
       {
         'icon': Icons.grid_on,
         'onTap': () => setState(() => _showGrid = !_showGrid),
-        'color': Colors.white
+        'color': Colors.white,
       },
-      {'icon': Icons.document_scanner, 'onTap': _toggleScanAnimation, 'color': Colors.white},
+      {
+        'icon': Icons.document_scanner,
+        'onTap': _toggleScanAnimation,
+        'color': Colors.white,
+      },
     ];
     return _actionRow(actions);
   }
@@ -339,25 +350,26 @@ Keep your response plain text. Do not use JSON, bullet points, or markdown.
         'icon': Icons.refresh,
         'onTap': () => setState(() {
           _capturedImage = null;
-        })
+        }),
       },
       {'icon': null, 'isCapture': true, 'onTap': _captureAndProcess},
       {'icon': Icons.photo_library, 'onTap': _pickAndProcess},
-      {
-        'icon': null,
-        'label': 'Done',
-        'onTap': _onDonePressed,
-      },
+      {'icon': null, 'label': 'Done', 'onTap': _onDonePressed},
     ];
     return _actionRow(actions, isBottom: true);
   }
 
-  Widget _actionRow(List<Map<String, dynamic>> actions, {bool isBottom = false}) {
+  Widget _actionRow(
+    List<Map<String, dynamic>> actions, {
+    bool isBottom = false,
+  }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-          color: primaryColor, borderRadius: BorderRadius.circular(buttonRadius)),
+        color: primaryColor,
+        borderRadius: BorderRadius.circular(buttonRadius),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: actions.map((a) {
@@ -376,13 +388,17 @@ Keep your response plain text. Do not use JSON, bullet points, or markdown.
             );
           } else if (a['icon'] != null) {
             return IconButton(
-                icon: Icon(a['icon'], color: a['color'] ?? Colors.white),
-                onPressed: a['onTap'] as void Function()?);
+              icon: Icon(a['icon'], color: a['color'] ?? Colors.white),
+              onPressed: a['onTap'] as void Function()?,
+            );
           } else {
             return TextButton(
-                onPressed: a['onTap'] as void Function()?,
-                child: Text(a['label'],
-                    style: const TextStyle(color: Colors.white)));
+              onPressed: a['onTap'] as void Function()?,
+              child: Text(
+                a['label'],
+                style: const TextStyle(color: Colors.white),
+              ),
+            );
           }
         }).toList(),
       ),
@@ -400,9 +416,9 @@ Keep your response plain text. Do not use JSON, bullet points, or markdown.
             children: [
               _capturedImage == null
                   ? (_cameraController != null &&
-                  _cameraController!.value.isInitialized
-                  ? CameraPreview(_cameraController!)
-                  : const Center(child: CircularProgressIndicator()))
+                            _cameraController!.value.isInitialized
+                        ? CameraPreview(_cameraController!)
+                        : const Center(child: CircularProgressIndicator()))
                   : Image.file(File(_capturedImage!.path), fit: BoxFit.cover),
 
               if (_showGrid)
@@ -412,22 +428,27 @@ Keep your response plain text. Do not use JSON, bullet points, or markdown.
                   width: cropRect.width * previewWidth,
                   height: cropRect.height * previewHeight,
                   child: CustomPaint(
-                      painter: CropOverlayPainter(
-                          cropRect: Rect.fromLTWH(0, 0, 1, 1))),
+                    painter: CropOverlayPainter(
+                      cropRect: Rect.fromLTWH(0, 0, 1, 1),
+                    ),
+                  ),
                 ),
 
               if (_scanning)
                 AnimatedBuilder(
                   animation: _scanAnimation,
                   builder: (context, child) {
-                    final top = cropRect.top * previewHeight +
+                    final top =
+                        cropRect.top * previewHeight +
                         _scanAnimation.value * cropRect.height * previewHeight;
                     return Positioned(
                       left: cropRect.left * previewWidth,
                       top: top,
                       width: cropRect.width * previewWidth,
                       height: scanLineHeight,
-                      child: Container(color: Colors.redAccent.withOpacity(0.8)),
+                      child: Container(
+                        color: Colors.redAccent.withOpacity(0.8),
+                      ),
                     );
                   },
                 ),
@@ -435,9 +456,7 @@ Keep your response plain text. Do not use JSON, bullet points, or markdown.
               // optional overlay while processing (in addition to dialog)
               if (_isProcessing)
                 const Positioned.fill(
-                  child: ColoredBox(
-                    color: Color.fromARGB(60, 0, 0, 0),
-                  ),
+                  child: ColoredBox(color: Color.fromARGB(60, 0, 0, 0)),
                 ),
             ],
           );
@@ -449,7 +468,10 @@ Keep your response plain text. Do not use JSON, bullet points, or markdown.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomizeAppBarScreen(onNotificationsTap: () {}, onProfileTap: () {}),
+      appBar: CustomizeAppBarScreen(
+        onNotificationsTap: () {},
+        onProfileTap: () {},
+      ),
       body: Column(
         children: [
           const SizedBox(height: 12),
@@ -476,13 +498,14 @@ class CropOverlayPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
     canvas.drawRect(
-        Rect.fromLTWH(
-          cropRect.left * size.width,
-          cropRect.top * size.height,
-          cropRect.width * size.width,
-          cropRect.height * size.height,
-        ),
-        paint);
+      Rect.fromLTWH(
+        cropRect.left * size.width,
+        cropRect.top * size.height,
+        cropRect.width * size.width,
+        cropRect.height * size.height,
+      ),
+      paint,
+    );
   }
 
   @override

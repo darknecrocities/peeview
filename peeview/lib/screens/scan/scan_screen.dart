@@ -23,14 +23,14 @@ class _ScanScreenState extends State<ScanScreen> {
       backgroundColor: Colors.white,
       appBar: CustomizeAppBarScreen(
         onNotificationsTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Notifications tapped")),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text("Notifications tapped")));
         },
         onProfileTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Profile tapped")),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text("Profile tapped")));
         },
       ),
       body: Padding(
@@ -73,7 +73,9 @@ class _ScanScreenState extends State<ScanScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: const [
-                _FixedCheckbox(label: "Capture a clear photo of your lab report"),
+                _FixedCheckbox(
+                  label: "Capture a clear photo of your lab report",
+                ),
                 _FixedCheckbox(label: "Automatic text extraction (OCR)"),
                 _FixedCheckbox(label: "AI analysis when complete"),
               ],
@@ -98,7 +100,7 @@ class _ScanScreenState extends State<ScanScreen> {
               alignment: Alignment.centerLeft,
               child: Text(
                 "• Lab report\n• Good lighting for a clear photo",
-                style: TextStyle(color: Colors.grey, fontSize: 13),
+                style: TextStyle(color: Colors.grey, fontSize: 14),
               ),
             ),
 
@@ -161,7 +163,7 @@ class _FixedCheckbox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(Icons.check_box, color: Colors.lightBlue, size: 22),
+        const Icon(Icons.check_box, color: Color(0xFF0062C8), size: 22),
         const SizedBox(width: 8),
         Expanded(
           child: Text(

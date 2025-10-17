@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:peeview/widgets/appbar/customize_app_bar_dash.dart';
 import 'package:peeview/widgets/navbar/customize_navbar.dart';
 import '../exclusive widgets/customize_appbar_screen.dart';
 import 'upload_result_screen.dart';
@@ -27,13 +28,10 @@ class _UploadScreenState extends State<UploadScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: CustomizeAppBarScreen(
-        onNotificationsTap: () => debugPrint("Notifications tapped"),
-        onProfileTap: () => debugPrint("Profile tapped"),
-      ),
+      appBar: CustomizeAppBarDash(),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -48,9 +46,7 @@ class _UploadScreenState extends State<UploadScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
                   _CheckItem(text: "Supports JPG, PNG, and PDF files"),
-                  SizedBox(height: 12),
                   _CheckItem(text: "Upload takes less than a minute"),
-                  SizedBox(height: 12),
                   _CheckItem(text: "AI analysis when complete"),
                 ],
               ),
@@ -58,27 +54,15 @@ class _UploadScreenState extends State<UploadScreen> {
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "What you’ll need:",
+                  "What you’ll need:\n• Lab report\n• Stable internet connection",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 14,
                     color: Colors.grey,
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "• Lab report\n• Stable internet connection",
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 38),
               Expanded(
                 child: GestureDetector(
                   onTap: _pickFile,
@@ -86,7 +70,7 @@ class _UploadScreenState extends State<UploadScreen> {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: const Color(0xFF0066E6),
+                        color: const Color(0xFF0062C8),
                         width: 2,
                       ),
                       borderRadius: BorderRadius.circular(12),
@@ -94,33 +78,31 @@ class _UploadScreenState extends State<UploadScreen> {
                     child: Center(
                       child: _selectedFile == null
                           ? Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(
-                            Icons.cloud_upload_outlined,
-                            size: 50,
-                            color: Color(0xFF0066E6),
-                          ),
-                          SizedBox(height: 12),
-                          Text(
-                            "Drag & drop to upload\nor browse",
-                            style: TextStyle(
-                              color: Color(0xFF0066E6),
-                              fontSize: 16,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      )
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(
+                                  Icons.cloud_upload_outlined,
+                                  size: 50,
+                                  color: Color(0xFF0066E6),
+                                ),
+                                SizedBox(height: 12),
+                                Text(
+                                  "Drag & drop to upload\nor browse",
+                                  style: TextStyle(
+                                    color: Color(0xFF0066E6),
+                                    fontSize: 16,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            )
                           : Text(
-                        "Selected: ${_selectedFile?.path
-                            .split('/')
-                            .last ?? 'Unknown'}",
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                        ),
-                      ),
+                              "Selected: ${_selectedFile?.path.split('/').last ?? 'Unknown'}",
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                              ),
+                            ),
                     ),
                   ),
                 ),
@@ -129,8 +111,9 @@ class _UploadScreenState extends State<UploadScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed:
-                  (_uploading || _selectedFile == null) ? null : _uploadFile,
+                  onPressed: (_uploading || _selectedFile == null)
+                      ? null
+                      : _uploadFile,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0066E6),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -141,13 +124,13 @@ class _UploadScreenState extends State<UploadScreen> {
                   child: _uploading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text(
-                    "Upload",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
+                          "Upload",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -212,9 +195,7 @@ class _UploadScreenState extends State<UploadScreen> {
       // Save file reference in Firestore
       await _firestore.collection("uploaded_reports").add({
         "userId": currentUser.uid,
-        "fileName": fileToUpload?.path
-            .split('/')
-            .last ?? 'unknown',
+        "fileName": fileToUpload?.path.split('/').last ?? 'unknown',
         "uploadedAt": FieldValue.serverTimestamp(),
       });
 
@@ -230,16 +211,16 @@ class _UploadScreenState extends State<UploadScreen> {
 
       setState(() => _selectedFile = null);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error uploading file: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error uploading file: $e")));
     } finally {
       setState(() => _uploading = false);
     }
   }
 }
 
-  class _CheckItem extends StatelessWidget {
+class _CheckItem extends StatelessWidget {
   final String text;
   const _CheckItem({required this.text});
 
@@ -247,7 +228,7 @@ class _UploadScreenState extends State<UploadScreen> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(Icons.check_box, color: Color(0xFF33B5FF)),
+        const Icon(Icons.check_box, color: Color(0xFF0062C8)),
         const SizedBox(width: 8),
         Expanded(
           child: Text(

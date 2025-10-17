@@ -18,7 +18,8 @@ class WelcomeScreen extends StatelessWidget {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => DashboardScreen(), // <-- directly call your screen
+        builder: (context) =>
+            DashboardScreen(), // <-- directly call your screen
         settings: RouteSettings(
           arguments: {'displayName': displayName}, // pass data if needed
         ),
@@ -53,10 +54,7 @@ class WelcomeScreen extends StatelessWidget {
               const Text(
                 "Your account has been registered successfully!",
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 10,
-                ),
+                style: TextStyle(color: Colors.grey, fontSize: 10),
               ),
 
               const Spacer(),
@@ -70,7 +68,8 @@ class WelcomeScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: const Text(
                     "Go to Dashboard",
@@ -94,9 +93,10 @@ class WelcomeScreen extends StatelessWidget {
                     Navigator.pushReplacementNamed(context, '/setup_profile');
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.lightBlue.shade200,
+                    backgroundColor: Color(0xFF0062C8),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: const Text(
                     "Setup Profile",
@@ -116,10 +116,7 @@ class WelcomeScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
                 text: TextSpan(
                   text: "Questions? Contact ",
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: Colors.grey, fontSize: 14),
                   children: [
                     TextSpan(
                       text: "support@peeview.com",
